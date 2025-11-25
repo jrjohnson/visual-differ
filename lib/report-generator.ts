@@ -43,7 +43,9 @@ class MarkdownBuilder {
   }
 
   image(alt: string, src: string): this {
-    this.content.push(`![${alt}](${src})\n`);
+    // Use angle bracket syntax if path contains spaces to ensure valid markdown
+    const formattedSrc = src.includes(' ') ? `<${src}>` : src;
+    this.content.push(`![${alt}](${formattedSrc})\n`);
     return this;
   }
 

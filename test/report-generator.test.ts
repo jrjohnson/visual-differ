@@ -169,5 +169,25 @@ describe('report-generator', () => {
 
       expect(markdown.toLowerCase()).toMatch(/pass|✓|✔/);
     });
+
+    it('should handle filenames with spaces in markdown images', () => {
+      const comparisonResults: ComparisonResult[] = [
+        {
+          name: 'my image with spaces.png',
+          hasDifference: true,
+          diffPercentage: 50,
+          diffImagePath: join(testDir, 'my image with spaces.png-diff.png'),
+        },
+      ];
+      const baselineOnly: ScannedFile[] = [];
+      const candidateOnly: ScannedFile[] = [];
+
+      generateReport(comparisonResults, baselineOnly, candidateOnly, testDir);
+
+      const markdown = readFileSync(join(testDir, 'OUTPUT.md'), 'utf-8');
+
+      // Should use angle bracket syntax for paths with spaces: ![alt](<path with spaces>)
+      expect(markdown).toMatch(/!\[.*\]\(<.*my.*image.*with.*spaces.*>\)/);
+    });
   });
 });
