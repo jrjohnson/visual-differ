@@ -15,6 +15,11 @@ export interface ComparisonResult {
   diffPercentage: number;
   /** Path to the generated diff image */
   diffImagePath: string;
+  /** Optional dimension mismatch info if images have different dimensions */
+  dimensionMismatch?: {
+    baseline: string;
+    candidate: string;
+  };
 }
 
 /**

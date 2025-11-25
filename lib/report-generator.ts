@@ -114,12 +114,17 @@ function generateMarkdown(
 
     withDifferences.forEach((result) => {
       const diffImageName = basename(result.diffImagePath);
-      md.heading(3, result.name)
-        .newline()
-        .paragraph(`${md.bold('Difference:')} ${result.diffPercentage.toFixed(2)}%`)
-        .newline()
-        .image(`${result.name} diff`, diffImageName)
-        .newline();
+      md.heading(3, result.name).newline();
+
+      if (result.dimensionMismatch) {
+        md.paragraph(
+          `${md.bold('Dimension mismatch:')} Baseline ${result.dimensionMismatch.baseline}, Candidate ${result.dimensionMismatch.candidate}`,
+        ).newline();
+      } else {
+        md.paragraph(`${md.bold('Difference:')} ${result.diffPercentage.toFixed(2)}%`).newline();
+      }
+
+      md.image(`${result.name} diff`, diffImageName).newline();
     });
   }
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdirSync, writeFileSync, rmSync, existsSync } from 'fs';
+import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { compareDirectories, type CompareResult } from '../lib/visual-differ.js';
 import { RED_PNG, BLUE_PNG, LARGE_RED_PNG } from './fixtures/png-fixtures.js';
@@ -148,6 +148,18 @@ describe('visual-differ', () => {
       writeFileSync(join(candidateDir, 'corrupt.png'), RED_PNG);
 
       expect(() => compareDirectories(baselineDir, candidateDir, outputDir)).toThrow();
+    });
+
+    it('should show dimension mismatch info in report', () => {
+      writeFileSync(join(baselineDir, 'mismatch.png'), RED_PNG); // 1x1
+      writeFileSync(join(candidateDir, 'mismatch.png'), LARGE_RED_PNG); // 2x2
+
+      compareDirectories(baselineDir, candidateDir, outputDir);
+
+      const markdown = readFileSync(join(outputDir, 'OUTPUT.md'), 'utf-8');
+      expect(markdown).toContain('Dimension mismatch');
+      expect(markdown).toContain('1x1');
+      expect(markdown).toContain('2x2');
     });
   });
 });

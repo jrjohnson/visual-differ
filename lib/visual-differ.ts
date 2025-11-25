@@ -60,6 +60,10 @@ export function compareDirectories(
           hasDifference: true,
           diffPercentage: 100,
           diffImagePath: diffPath,
+          dimensionMismatch: {
+            baseline: `${error.baselineWidth}x${error.baselineHeight}`,
+            candidate: `${error.candidateWidth}x${error.candidateHeight}`,
+          },
         };
       }
       // Re-throw unexpected errors

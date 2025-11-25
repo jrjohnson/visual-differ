@@ -175,7 +175,7 @@ describe('report-generator', () => {
         {
           name: 'my image with spaces.png',
           hasDifference: true,
-          diffPercentage: 50,
+          diffPercentage: 100,
           diffImagePath: join(testDir, 'my image with spaces.png-diff.png'),
         },
       ];
@@ -188,6 +188,29 @@ describe('report-generator', () => {
 
       // Should use angle bracket syntax for paths with spaces: ![alt](<path with spaces>)
       expect(markdown).toMatch(/!\[.*\]\(<.*my.*image.*with.*spaces.*>\)/);
+    });
+
+    it('should indicate dimension mismatch error instead of showing percentage', () => {
+      const comparisonResults: ComparisonResult[] = [
+        {
+          name: 'mismatched.png',
+          hasDifference: true,
+          diffPercentage: 100,
+          diffImagePath: join(testDir, 'mismatched-diff.png'),
+          dimensionMismatch: { baseline: '10x20', candidate: '20x30' },
+        },
+      ];
+      const baselineOnly: ScannedFile[] = [];
+      const candidateOnly: ScannedFile[] = [];
+
+      generateReport(comparisonResults, baselineOnly, candidateOnly, testDir);
+
+      const markdown = readFileSync(join(testDir, 'OUTPUT.md'), 'utf-8');
+
+      expect(markdown).toContain('Dimension mismatch');
+      expect(markdown).toContain('10x20');
+      expect(markdown).toContain('20x30');
+      expect(markdown).not.toContain('100.00%'); // Should not show percentage
     });
   });
 });
