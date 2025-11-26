@@ -1,6 +1,6 @@
 {
   "name": "visual-differ",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "CLI tool for comparing screenshot directories using pixel-perfect image comparison with HTML reports",
   "type": "module",
   "bin": {
