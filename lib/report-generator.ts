@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync } from 'fs';
 import { join, basename, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import Handlebars from 'handlebars';
+import { REPORT_FILENAME } from './constants.js';
 import type { ComparisonResult } from './image-comparer.js';
 import type { ScannedFile } from './file-scanner.js';
 
@@ -23,7 +24,7 @@ export function generateReport(
   outputDir: string,
 ): void {
   const html = generateHTML(comparisonResults, baselineOnly, candidateOnly);
-  writeFileSync(join(outputDir, 'index.html'), html);
+  writeFileSync(join(outputDir, REPORT_FILENAME), html);
 }
 
 /**
@@ -63,15 +64,15 @@ function generateHTML(
     addedCount,
     identicalCount: withoutDifferences.length,
     withDifferences: withDifferences.map((result) => ({
-      name: result.name,
+      name: result.pair.name,
       dimensionMismatch: result.dimensionMismatch,
       diffPercentage: result.diffPercentage.toFixed(2),
-      baselineImage: basename(result.baselineImagePath),
-      diffImage: basename(result.diffImagePath),
-      candidateImage: basename(result.candidateImagePath),
+      baselineImage: basename(result.pair.baselinePath),
+      diffImage: basename(result.pair.diffPath),
+      candidateImage: basename(result.pair.candidatePath),
     })),
     withoutDifferences: withoutDifferences.map((result) => ({
-      name: result.name,
+      name: result.pair.name,
     })),
     baselineOnly: baselineOnly.map((file) => ({ name: file.name })),
     candidateOnly: candidateOnly.map((file) => ({ name: file.name })),

@@ -72,7 +72,7 @@ describe('visual-differ', () => {
 
       compareDirectories(baselineDir, candidateDir, outputDir);
 
-      expect(existsSync(join(outputDir, 'changed.png-diff.png'))).toBe(true);
+      expect(existsSync(join(outputDir, 'changed-diff.png'))).toBe(true);
     });
 
     it('should generate index.html report', () => {

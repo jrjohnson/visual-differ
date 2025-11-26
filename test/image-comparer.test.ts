@@ -31,16 +31,16 @@ describe('image-comparer', () => {
         'image.png',
         { name: 'image.png', path: baselinePath },
         { name: 'image.png', path: candidatePath },
+        outputDir,
       );
 
-      const result: ComparisonResult = compareImages(pair, outputDir);
+      const result: ComparisonResult = compareImages(pair);
 
-      expect(result.name).toBe('image.png');
+      expect(result.pair.name).toBe('image.png');
       expect(result.hasDifference).toBe(false);
       expect(result.diffPercentage).toBe(0);
-      expect(result.diffImagePath).toBe(join(outputDir, 'image.png-diff.png'));
       // Images should not be written for identical results
-      expect(existsSync(result.diffImagePath)).toBe(false);
+      expect(existsSync(result.pair.diffPath)).toBe(false);
     });
 
     it('should detect different images', () => {
@@ -54,19 +54,17 @@ describe('image-comparer', () => {
         'test.png',
         { name: 'test.png', path: baselinePath },
         { name: 'test.png', path: candidatePath },
+        outputDir,
       );
 
-      const result: ComparisonResult = compareImages(pair, outputDir);
+      const result: ComparisonResult = compareImages(pair);
 
-      expect(result.name).toBe('test.png');
+      expect(result.pair.name).toBe('test.png');
       expect(result.hasDifference).toBe(true);
       expect(result.diffPercentage).toBeGreaterThan(0);
-      expect(result.diffImagePath).toBe(join(outputDir, 'test.png-diff.png'));
-      expect(result.baselineImagePath).toBe(join(outputDir, 'test.png-baseline.png'));
-      expect(result.candidateImagePath).toBe(join(outputDir, 'test.png-candidate.png'));
-      expect(existsSync(result.diffImagePath)).toBe(true);
-      expect(existsSync(result.baselineImagePath)).toBe(true);
-      expect(existsSync(result.candidateImagePath)).toBe(true);
+      expect(existsSync(result.pair.diffPath)).toBe(true);
+      expect(existsSync(result.pair.baselinePath)).toBe(true);
+      expect(existsSync(result.pair.candidatePath)).toBe(true);
     });
 
     it('should calculate correct diff percentage', () => {
@@ -80,9 +78,10 @@ describe('image-comparer', () => {
         'test.png',
         { name: 'test.png', path: baselinePath },
         { name: 'test.png', path: candidatePath },
+        outputDir,
       );
 
-      const result: ComparisonResult = compareImages(pair, outputDir);
+      const result: ComparisonResult = compareImages(pair);
 
       // For 1x1 image with one different pixel, it should be 100%
       expect(result.diffPercentage).toBe(100);

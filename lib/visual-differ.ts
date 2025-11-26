@@ -1,8 +1,7 @@
-import { join } from 'path';
-import { readFileSync, writeFileSync } from 'fs';
+import { writeFileSync } from 'fs';
 import { PNG } from 'pngjs';
 import { scanAndMatchFiles } from './file-scanner.js';
-import { PngFilePair, DimensionMismatchError } from './png-file-pair.js';
+import { PngFilePair } from './png-file-pair.js';
 import { compareImages } from './image-comparer.js';
 import { calculateExitCode } from './exit-code-calculator.js';
 import { generateReport } from './report-generator.js';
@@ -45,44 +44,31 @@ export function compareDirectories(
 
   // Load and compare matched PNG pairs
   const comparisonResults: ComparisonResult[] = fileMatches.matched.map((matched) => {
-    try {
-      const pngPair = new PngFilePair(
-        matched.name,
-        { name: matched.name, path: matched.baselinePath },
-        { name: matched.name, path: matched.candidatePath },
-      );
+    const pngPair = new PngFilePair(
+      matched.name,
+      { name: matched.name, path: matched.baselinePath },
+      { name: matched.name, path: matched.candidatePath },
+      outputDir,
+    );
 
-      return compareImages(pngPair, outputDir);
-    } catch (error) {
-      // Handle dimension mismatches gracefully by treating them as 100% different
-      if (error instanceof DimensionMismatchError) {
-        const baselineOutputPath = join(outputDir, `${matched.name}-baseline.png`);
-        const candidateOutputPath = join(outputDir, `${matched.name}-candidate.png`);
-        const diffOutputPath = join(outputDir, `${matched.name}-diff.png`);
+    // Handle dimension mismatch - write PNGs and treat as 100% different
+    if (pngPair.hasDimensionMismatch) {
+      writeFileSync(pngPair.baselinePath, PNG.sync.write(pngPair.baselinePng));
+      writeFileSync(pngPair.candidatePath, PNG.sync.write(pngPair.candidatePng));
 
-        // For dimension mismatches, load and write the PNGs separately
-        const baselinePng = PNG.sync.read(readFileSync(matched.baselinePath));
-        const candidatePng = PNG.sync.read(readFileSync(matched.candidatePath));
-
-        writeFileSync(baselineOutputPath, PNG.sync.write(baselinePng));
-        writeFileSync(candidateOutputPath, PNG.sync.write(candidatePng));
-
-        return {
-          name: matched.name,
-          hasDifference: true,
-          diffPercentage: 100,
-          baselineImagePath: baselineOutputPath,
-          candidateImagePath: candidateOutputPath,
-          diffImagePath: diffOutputPath,
-          dimensionMismatch: {
-            baseline: `${error.baselineWidth}x${error.baselineHeight}`,
-            candidate: `${error.candidateWidth}x${error.candidateHeight}`,
-          },
-        };
-      }
-      // Re-throw unexpected errors
-      throw error;
+      return {
+        pair: pngPair,
+        hasDifference: true,
+        diffPercentage: 100,
+        dimensionMismatch: {
+          baseline: `${pngPair.dimensionMismatch!.baselineWidth}x${pngPair.dimensionMismatch!.baselineHeight}`,
+          candidate: `${pngPair.dimensionMismatch!.candidateWidth}x${pngPair.dimensionMismatch!.candidateHeight}`,
+        },
+      };
     }
+
+    // No dimension mismatch - do normal comparison
+    return compareImages(pngPair);
   });
 
   // Calculate exit code

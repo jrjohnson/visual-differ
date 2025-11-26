@@ -1,24 +1,17 @@
 import { PNG } from 'pngjs';
 import { readFileSync } from 'fs';
-
-import type { ScannedFile } from './file-scanner';
+import { join } from 'path';
+import { BASELINE_SUFFIX, CANDIDATE_SUFFIX, DIFF_SUFFIX } from './constants.js';
+import type { ScannedFile } from './file-scanner.js';
 
 /**
- * Error thrown when baseline and candidate images have different dimensions
+ * Information about a dimension mismatch between baseline and candidate images
  */
-export class DimensionMismatchError extends Error {
-  constructor(
-    public readonly imageName: string,
-    public readonly baselineWidth: number,
-    public readonly baselineHeight: number,
-    public readonly candidateWidth: number,
-    public readonly candidateHeight: number,
-  ) {
-    super(
-      `Images have different dimensions. ${imageName}: Baseline ${baselineWidth}x${baselineHeight}, Candidate ${candidateWidth}x${candidateHeight}`,
-    );
-    this.name = 'DimensionMismatchError';
-  }
+export interface DimensionMismatch {
+  baselineWidth: number;
+  baselineHeight: number;
+  candidateWidth: number;
+  candidateHeight: number;
 }
 
 /**
@@ -26,10 +19,12 @@ export class DimensionMismatchError extends Error {
  */
 export class PngFilePair {
   public readonly name: string;
+  public readonly outputDir: string;
   public readonly width: number;
   public readonly height: number;
   public readonly baselinePng: PNG;
   public readonly candidatePng: PNG;
+  public readonly dimensionMismatch?: DimensionMismatch;
 
   /**
    * Gets the baseline image pixel data buffer
@@ -46,47 +41,73 @@ export class PngFilePair {
   }
 
   /**
-   * Creates a PngFilePair by loading and validating two matched PNG files
-   * @param matchedFile - The matched file info from file scanner
-   * @throws Error if files can't be loaded or dimensions differ
+   * Returns true if the baseline and candidate images have different dimensions
    */
-  constructor(name: string, baseline: ScannedFile, candidate: ScannedFile) {
+  get hasDimensionMismatch(): boolean {
+    return this.dimensionMismatch !== undefined;
+  }
+
+  /**
+   * Gets the base name without extension
+   */
+  private get nameWithoutExtension(): string {
+    return this.name.replace(/\.png$/i, '');
+  }
+
+  /**
+   * Gets the output path for the baseline image
+   */
+  get baselinePath(): string {
+    return join(this.outputDir, `${this.nameWithoutExtension}${BASELINE_SUFFIX}`);
+  }
+
+  /**
+   * Gets the output path for the candidate image
+   */
+  get candidatePath(): string {
+    return join(this.outputDir, `${this.nameWithoutExtension}${CANDIDATE_SUFFIX}`);
+  }
+
+  /**
+   * Gets the output path for the diff image
+   */
+  get diffPath(): string {
+    return join(this.outputDir, `${this.nameWithoutExtension}${DIFF_SUFFIX}`);
+  }
+
+  /**
+   * Creates a PngFilePair by loading two matched PNG files
+   * @param name - The name of the matched file
+   * @param baseline - The baseline file info
+   * @param candidate - The candidate file info
+   * @param outputDir - The output directory for generated images
+   */
+  constructor(name: string, baseline: ScannedFile, candidate: ScannedFile, outputDir: string) {
     this.name = name;
+    this.outputDir = outputDir;
 
-    let baselinePng: PNG;
-    let candidatePng: PNG;
+    // Read PNGs
+    const baselineBuffer = readFileSync(baseline.path);
+    this.baselinePng = PNG.sync.read(baselineBuffer);
 
-    try {
-      const baselineBuffer = readFileSync(baseline.path);
-      baselinePng = PNG.sync.read(baselineBuffer);
-    } catch (error) {
-      throw new Error(
-        `Failed to read baseline PNG: ${baseline.path}. ${error instanceof Error ? error.message : String(error)}`,
-      );
+    const candidateBuffer = readFileSync(candidate.path);
+    this.candidatePng = PNG.sync.read(candidateBuffer);
+
+    // Always use baseline dimensions
+    this.width = this.baselinePng.width;
+    this.height = this.baselinePng.height;
+
+    // Check for dimension mismatch
+    if (
+      this.baselinePng.width !== this.candidatePng.width ||
+      this.baselinePng.height !== this.candidatePng.height
+    ) {
+      this.dimensionMismatch = {
+        baselineWidth: this.baselinePng.width,
+        baselineHeight: this.baselinePng.height,
+        candidateWidth: this.candidatePng.width,
+        candidateHeight: this.candidatePng.height,
+      };
     }
-
-    try {
-      const candidateBuffer = readFileSync(candidate.path);
-      candidatePng = PNG.sync.read(candidateBuffer);
-    } catch (error) {
-      throw new Error(
-        `Failed to read candidate PNG: ${candidate.path}. ${error instanceof Error ? error.message : String(error)}`,
-      );
-    }
-
-    if (baselinePng.width !== candidatePng.width || baselinePng.height !== candidatePng.height) {
-      throw new DimensionMismatchError(
-        this.name,
-        baselinePng.width,
-        baselinePng.height,
-        candidatePng.width,
-        candidatePng.height,
-      );
-    }
-
-    this.width = baselinePng.width;
-    this.height = baselinePng.height;
-    this.baselinePng = baselinePng;
-    this.candidatePng = candidatePng;
   }
 }

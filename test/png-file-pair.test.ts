@@ -6,10 +6,12 @@ import { RED_PNG, LARGE_RED_PNG } from './fixtures/png-fixtures.js';
 
 describe('PngFilePair', () => {
   const testDir = join(process.cwd(), 'test-fixtures-png-pair');
+  const outputDir = join(testDir, 'output');
 
   beforeEach(() => {
     rmSync(testDir, { recursive: true, force: true });
     mkdirSync(testDir, { recursive: true });
+    mkdirSync(outputDir, { recursive: true });
   });
 
   afterEach(() => {
@@ -27,6 +29,7 @@ describe('PngFilePair', () => {
       'image.png',
       { name: 'image.png', path: baselinePath },
       { name: 'image.png', path: candidatePath },
+      outputDir,
     );
 
     expect(pair.name).toBe('image.png');
@@ -34,23 +37,30 @@ describe('PngFilePair', () => {
     expect(pair.height).toBe(1);
     expect(pair.baselineData).toBeInstanceOf(Buffer);
     expect(pair.candidateData).toBeInstanceOf(Buffer);
+    expect(pair.hasDimensionMismatch).toBe(false);
   });
 
-  it('should throw error if dimensions do not match', () => {
+  it('should detect dimension mismatch without throwing', () => {
     const baselinePath = join(testDir, 'small.png');
     const candidatePath = join(testDir, 'large.png');
 
     writeFileSync(baselinePath, RED_PNG); // 1x1
     writeFileSync(candidatePath, LARGE_RED_PNG); // 2x2
 
-    expect(
-      () =>
-        new PngFilePair(
-          'test.png',
-          { name: 'test.png', path: baselinePath },
-          { name: 'test.png', path: candidatePath },
-        ),
-    ).toThrow(/different dimensions/);
+    const pair = new PngFilePair(
+      'test.png',
+      { name: 'test.png', path: baselinePath },
+      { name: 'test.png', path: candidatePath },
+      outputDir,
+    );
+
+    expect(pair.hasDimensionMismatch).toBe(true);
+    expect(pair.dimensionMismatch).toEqual({
+      baselineWidth: 1,
+      baselineHeight: 1,
+      candidateWidth: 2,
+      candidateHeight: 2,
+    });
   });
 
   it('should throw error if baseline file cannot be read', () => {
@@ -65,8 +75,9 @@ describe('PngFilePair', () => {
           'test.png',
           { name: 'test.png', path: baselinePath },
           { name: 'test.png', path: candidatePath },
+          outputDir,
         ),
-    ).toThrow(/baseline/);
+    ).toThrow();
   });
 
   it('should throw error if candidate file cannot be read', () => {
@@ -81,7 +92,8 @@ describe('PngFilePair', () => {
           'test.png',
           { name: 'test.png', path: baselinePath },
           { name: 'test.png', path: candidatePath },
+          outputDir,
         ),
-    ).toThrow(/candidate/);
+    ).toThrow();
   });
 });

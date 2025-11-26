@@ -1,9 +1,42 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdirSync, rmSync, readFileSync, existsSync } from 'fs';
 import { join } from 'path';
+import { PNG } from 'pngjs';
 import { generateReport } from '../lib/report-generator.js';
 import type { ComparisonResult } from '../lib/image-comparer.js';
 import type { ScannedFile } from '../lib/file-scanner.js';
+import type { PngFilePair } from '../lib/png-file-pair.js';
+
+// Helper to create a mock PngFilePair for testing
+function createMockPair(name: string, outputDir: string): PngFilePair {
+  const mockPng = new PNG({ width: 1, height: 1 });
+  return {
+    name,
+    outputDir,
+    width: 1,
+    height: 1,
+    baselinePng: mockPng,
+    candidatePng: mockPng,
+    get baselineData() {
+      return mockPng.data;
+    },
+    get candidateData() {
+      return mockPng.data;
+    },
+    get hasDimensionMismatch() {
+      return false;
+    },
+    get baselinePath() {
+      return join(outputDir, `${name.replace(/\.png$/i, '')}-baseline.png`);
+    },
+    get candidatePath() {
+      return join(outputDir, `${name.replace(/\.png$/i, '')}-candidate.png`);
+    },
+    get diffPath() {
+      return join(outputDir, `${name.replace(/\.png$/i, '')}-diff.png`);
+    },
+  } as unknown as PngFilePair;
+}
 
 describe('report-generator', () => {
   const testDir = join(process.cwd(), 'test-fixtures-report');
@@ -31,12 +64,9 @@ describe('report-generator', () => {
     it('should include summary with counts', () => {
       const comparisonResults: ComparisonResult[] = [
         {
-          name: 'changed.png',
+          pair: createMockPair('changed.png', testDir),
           hasDifference: true,
           diffPercentage: 25.5,
-          baselineImagePath: join(testDir, 'changed-baseline.png'),
-          candidateImagePath: join(testDir, 'changed-candidate.png'),
-          diffImagePath: join(testDir, 'changed-diff.png'),
         },
       ];
       const baselineOnly: ScannedFile[] = [{ name: 'deleted.png', path: '/baseline/deleted.png' }];
@@ -56,12 +86,9 @@ describe('report-generator', () => {
     it('should show three images side-by-side for differences', () => {
       const comparisonResults: ComparisonResult[] = [
         {
-          name: 'changed.png',
+          pair: createMockPair('changed.png', testDir),
           hasDifference: true,
           diffPercentage: 15.75,
-          baselineImagePath: join(testDir, 'changed-baseline.png'),
-          candidateImagePath: join(testDir, 'changed-candidate.png'),
-          diffImagePath: join(testDir, 'changed-diff.png'),
         },
       ];
       const baselineOnly: ScannedFile[] = [];
@@ -81,12 +108,9 @@ describe('report-generator', () => {
     it('should handle dimension mismatch display', () => {
       const comparisonResults: ComparisonResult[] = [
         {
-          name: 'mismatched.png',
+          pair: createMockPair('mismatched.png', testDir),
           hasDifference: true,
           diffPercentage: 100,
-          baselineImagePath: join(testDir, 'mismatched-baseline.png'),
-          candidateImagePath: join(testDir, 'mismatched-candidate.png'),
-          diffImagePath: join(testDir, 'mismatched-diff.png'),
           dimensionMismatch: { baseline: '10x20', candidate: '20x30' },
         },
       ];
@@ -105,12 +129,9 @@ describe('report-generator', () => {
     it('should show status indicator', () => {
       const comparisonResults: ComparisonResult[] = [
         {
-          name: 'changed.png',
+          pair: createMockPair('changed.png', testDir),
           hasDifference: true,
           diffPercentage: 15.75,
-          baselineImagePath: join(testDir, 'changed-baseline.png'),
-          candidateImagePath: join(testDir, 'changed-candidate.png'),
-          diffImagePath: join(testDir, 'changed-diff.png'),
         },
       ];
       const baselineOnly: ScannedFile[] = [];
@@ -126,12 +147,9 @@ describe('report-generator', () => {
     it('should show success status when no differences', () => {
       const comparisonResults: ComparisonResult[] = [
         {
-          name: 'unchanged.png',
+          pair: createMockPair('unchanged.png', testDir),
           hasDifference: false,
           diffPercentage: 0,
-          baselineImagePath: join(testDir, 'unchanged-baseline.png'),
-          candidateImagePath: join(testDir, 'unchanged-candidate.png'),
-          diffImagePath: join(testDir, 'unchanged-diff.png'),
         },
       ];
       const baselineOnly: ScannedFile[] = [];
