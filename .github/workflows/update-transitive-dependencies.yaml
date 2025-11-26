@@ -1,0 +1,41 @@
+name: Update Transitive Dependencies
+
+on:
+  schedule:
+    - cron: '15 15 * * 5' # weekly, on Friday morning (UTC)
+  workflow_dispatch: null
+
+jobs:
+  update:
+    runs-on: macos-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: remove and re-create lock file
+        run: |
+          rm pnpm-lock.yaml
+          pnpm install --fix-lockfile
+          pnpm dedupe
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.PAT }}
+          commit-message: Update Transitive Dependencies
+          title: Update Transitive Dependencies
+          body: |
+            - Dependency updates
+          branch: auto-update-dependencies
+          labels: dependencies
+      - name: Enable Pull Request Automerge and Label for Tests
+        if: steps.cpr.outputs.pull-request-operation == 'created'
+        run: |
+          gh pr merge --merge --auto ${{ steps.cpr.outputs.pull-request-number }}
+        env:
+          GH_TOKEN: ${{ secrets.PAT }}
