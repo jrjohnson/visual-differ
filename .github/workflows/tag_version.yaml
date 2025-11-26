@@ -34,8 +34,6 @@ jobs:
       - name: Increment Package Versions
         run: |
           pnpx versionup --level ${{ github.event.inputs.releaseType }}
-      - name: Format Package JSON
-        run: pnpm format
       - run: |
           NEW_TAG=`node -p "require('./package.json').version"`
           echo ${NEW_TAG}
