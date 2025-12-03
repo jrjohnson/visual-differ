@@ -5,6 +5,10 @@ on:
     - cron: '15 15 * * 5' # weekly, on Friday morning (UTC)
   workflow_dispatch: null
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   update:
     runs-on: macos-latest
