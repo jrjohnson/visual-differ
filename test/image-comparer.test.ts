@@ -49,5 +49,27 @@ describe('image-comparer', () => {
       // For 1x1 image with one different pixel, it should be 100%
       expect(result.diffPercentage).toBe(100);
     });
+
+    it('should accept custom threshold parameter', () => {
+      const pair = testDir.createPngFilePair('test.png', 'red', 'blue');
+
+      const result: ComparisonResult = compareImages(pair, 0.5);
+
+      expect(result.pair.name).toBe('test.png');
+      expect(result.hasDifference).toBe(true);
+      expect(result.diffPercentage).toBe(100);
+    });
+
+    it('should ignore all differences with threshold=1', () => {
+      const pair = testDir.createPngFilePair('test.png', 'red', 'blue');
+
+      const result: ComparisonResult = compareImages(pair, 1);
+
+      expect(result.pair.name).toBe('test.png');
+      expect(result.hasDifference).toBe(false);
+      expect(result.diffPercentage).toBe(0);
+      // Images should not be written when no differences detected
+      expect(existsSync(result.pair.diffPath)).toBe(false);
+    });
   });
 });

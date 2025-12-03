@@ -31,6 +31,7 @@ export interface CompareResult {
  * @param baselineDir - Directory containing baseline (expected) screenshots
  * @param candidateDir - Directory containing candidate (actual) screenshots
  * @param outputDir - Directory where diff images and report will be written
+ * @param threshold - Optional pixelmatch threshold (0-1, lower = more sensitive)
  * @returns Summary of comparison results
  * @throws Error if directories don't exist or comparison fails
  */
@@ -38,6 +39,7 @@ export function compareDirectories(
   baselineDir: string,
   candidateDir: string,
   outputDir: string,
+  threshold?: number,
 ): CompareResult {
   // Scan and match files
   const fileMatches = scanAndMatchFiles(baselineDir, candidateDir);
@@ -68,7 +70,7 @@ export function compareDirectories(
     }
 
     // No dimension mismatch - do normal comparison
-    return compareImages(pngPair);
+    return compareImages(pngPair, threshold);
   });
 
   // Calculate exit code

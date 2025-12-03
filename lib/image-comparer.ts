@@ -23,9 +23,10 @@ export interface ComparisonResult {
 /**
  * Compares two PNG images using pixelmatch and generates a diff image
  * @param filePair - The matched PNG file pair to compare
+ * @param threshold - Optional pixelmatch threshold (0-1, lower = more sensitive)
  * @returns Comparison result with difference status and percentage
  */
-export function compareImages(filePair: PngFilePair): ComparisonResult {
+export function compareImages(filePair: PngFilePair, threshold?: number): ComparisonResult {
   const { width, height } = filePair;
   const diff = new PNG({ width, height });
 
@@ -35,7 +36,7 @@ export function compareImages(filePair: PngFilePair): ComparisonResult {
     diff.data,
     width,
     height,
-    { threshold: 0.1 },
+    threshold !== undefined ? { threshold } : {},
   );
 
   const hasDifference = numDiffPixels > 0;
