@@ -189,5 +189,58 @@ describe('visual-differ', () => {
       expect(html).toContain('1x1');
       expect(html).toContain('2x2');
     });
+
+    it('should accept custom threshold parameter', () => {
+      testDir.writeBaseline('image1.png', 'red');
+      testDir.writeCandidate('image1.png', 'blue');
+
+      const result: CompareResult = compareDirectories(
+        testDir.baselineDir,
+        testDir.candidateDir,
+        testDir.outputDir,
+        0.5,
+      );
+
+      expect(result.exitCode).toBe(1);
+      expect(result.withDifferences).toBe(1);
+    });
+
+    it('should pass threshold parameter through to image comparison', () => {
+      testDir.writeBaseline('image1.png', 'red');
+      testDir.writeBaseline('image2.png', 'red');
+      testDir.writeCandidate('image1.png', 'blue');
+      testDir.writeCandidate('image2.png', 'blue');
+
+      // With threshold=1, all differences should be ignored
+      const result: CompareResult = compareDirectories(
+        testDir.baselineDir,
+        testDir.candidateDir,
+        testDir.outputDir,
+        1,
+      );
+
+      expect(result.exitCode).toBe(0);
+      expect(result.withDifferences).toBe(0);
+      expect(result.withoutDifferences).toBe(2);
+      // No diff files should be created when threshold=1
+      expect(existsSync(join(testDir.outputDir, 'image1-diff.png'))).toBe(false);
+      expect(existsSync(join(testDir.outputDir, 'image2-diff.png'))).toBe(false);
+    });
+
+    it('should detect differences with default threshold when not specified', () => {
+      testDir.writeBaseline('image1.png', 'red');
+      testDir.writeCandidate('image1.png', 'blue');
+
+      // No threshold parameter provided, should use default
+      const result: CompareResult = compareDirectories(
+        testDir.baselineDir,
+        testDir.candidateDir,
+        testDir.outputDir,
+      );
+
+      expect(result.exitCode).toBe(1);
+      expect(result.withDifferences).toBe(1);
+      expect(existsSync(join(testDir.outputDir, 'image1-diff.png'))).toBe(true);
+    });
   });
 });
