@@ -43,9 +43,9 @@
       <p><strong>Difference:</strong> {{diffPercentage}}%</p>
     {{/if}}
     <div class="diff-images">
-      <img src="{{baselineImage}}" alt="Baseline screenshot for {{name}}">
-      <img src="{{diffImage}}" alt="Visual difference highlighting changed pixels in {{name}}">
-      <img src="{{candidateImage}}" alt="Candidate screenshot for {{name}}">
+      <a href="{{baselineImage}}"><img src="{{baselineImage}}" alt="Baseline screenshot for {{name}}" /></a>
+      <a href="{{diffImage}}"><img src="{{diffImage}}" alt="Visual difference highlighting changed pixels in {{name}}"/></a>
+      <a href="{{candidateImage}}"><img src="{{candidateImage}}" alt="Candidate screenshot for {{name}}" /></a>
     </div>
   </div>
   {{/each}}
