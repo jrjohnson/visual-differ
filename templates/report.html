@@ -49,7 +49,9 @@
     {{/if}}
     <div class="diff-images">
       <a href="{{baselineImage}}"><img src="{{baselineImage}}" alt="Baseline screenshot for {{name}}" /></a>
+      {{#unless dimensionMismatch}}
       <a href="{{diffImage}}"><img src="{{diffImage}}" alt="Visual difference highlighting changed pixels in {{name}}"/></a>
+      {{/unless}}
       <a href="{{candidateImage}}"><img src="{{candidateImage}}" alt="Candidate screenshot for {{name}}" /></a>
     </div>
   </div>
