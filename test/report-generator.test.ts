@@ -94,6 +94,9 @@ describe('report-generator', () => {
       expect(html).toContain('Dimension mismatch');
       expect(html).toContain('10x20');
       expect(html).toContain('20x30');
+      expect(html).toContain('mismatched-baseline.png');
+      expect(html).not.toContain('mismatched-diff.png');
+      expect(html).toContain('mismatched-candidate.png');
     });
 
     it('should show status indicator', () => {
