@@ -37,7 +37,7 @@
     "type": "git",
     "url": "https://github.com/jrjohnson/visual-differ.git"
   },
-  "packageManager": "pnpm@10.27.0",
+  "packageManager": "pnpm@10.28.0",
   "engines": {
     "node": ">=24.0.0"
   },
