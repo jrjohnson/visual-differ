@@ -61,3 +61,33 @@ jobs:
           test -f dist/bin/visual-differ.js
           test -f dist/lib/visual-differ.js
           test -d dist/templates
+
+  sample:
+    name: Run Against our Samples
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install
+      - run: pnpm run build
+      - run: mkdir -p ./results
+      - name: Diff Samples, Expect Error
+        run: |
+          #!/usr/bin/env bash
+          set -euo pipefail
+
+          node dist/bin/visual-differ.js samples/baseline/ samples/candidate/ ./results || rc=$?
+          # rc will be set only when the node process exited non-zero
+          if [ "${rc:-0}" -ne 0 ]; then
+            echo "visual-differ exited with code ${rc} (expected)"; exit 0
+          else
+            echo "visual-differ succeeded (unexpected)"; exit 1
+          fi
+      - uses: actions/upload-artifact@v6
+        with:
+          path: results
