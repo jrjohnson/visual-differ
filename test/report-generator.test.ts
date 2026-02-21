@@ -67,10 +67,10 @@ describe('report-generator', () => {
 
       const html = readFileSync(join(testDir.outputDir, 'index.html'), 'utf-8');
 
-      // Should reference all three images
-      expect(html).toContain('changed-baseline.png');
-      expect(html).toContain('changed-candidate.png');
-      expect(html).toContain('changed-diff.png');
+      // Should reference all three images with images/ prefix
+      expect(html).toContain('images/changed-baseline.png');
+      expect(html).toContain('images/changed-candidate.png');
+      expect(html).toContain('images/changed-diff.png');
       expect(html).toContain('15.75');
     });
 
@@ -94,9 +94,9 @@ describe('report-generator', () => {
       expect(html).toContain('Dimension mismatch');
       expect(html).toContain('10x20');
       expect(html).toContain('20x30');
-      expect(html).toContain('mismatched-baseline.png');
-      expect(html).not.toContain('mismatched-diff.png');
-      expect(html).toContain('mismatched-candidate.png');
+      expect(html).toContain('images/mismatched-baseline.png');
+      expect(html).not.toContain('images/mismatched-diff.png');
+      expect(html).toContain('images/mismatched-candidate.png');
     });
 
     it('should show status indicator', () => {

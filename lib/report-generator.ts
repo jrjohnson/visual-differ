@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from 'fs';
 import { join, basename, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import Handlebars from 'handlebars';
-import { REPORT_FILENAME } from './constants.js';
+import { IMAGES_DIR, REPORT_FILENAME } from './constants.js';
 import type { ComparisonResult } from './image-comparer.js';
 import type { ScannedFile } from './file-scanner.js';
 
@@ -67,9 +67,9 @@ function generateHTML(
       name: result.pair.name,
       dimensionMismatch: result.dimensionMismatch,
       diffPercentage: result.diffPercentage.toFixed(2),
-      baselineImage: basename(result.pair.baselinePath),
-      diffImage: basename(result.pair.diffPath),
-      candidateImage: basename(result.pair.candidatePath),
+      baselineImage: `${IMAGES_DIR}/${basename(result.pair.baselinePath)}`,
+      diffImage: `${IMAGES_DIR}/${basename(result.pair.diffPath)}`,
+      candidateImage: `${IMAGES_DIR}/${basename(result.pair.candidatePath)}`,
     })),
     withoutDifferences: withoutDifferences.map((result) => ({
       name: result.pair.name,

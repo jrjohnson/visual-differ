@@ -1,10 +1,12 @@
-import { writeFileSync } from 'fs';
+import { mkdirSync, writeFileSync } from 'fs';
+import { join } from 'path';
 import { PNG } from 'pngjs';
 import { scanAndMatchFiles } from './file-scanner.js';
 import { PngFilePair } from './png-file-pair.js';
 import { compareImages } from './image-comparer.js';
 import { calculateExitCode } from './exit-code-calculator.js';
 import { generateReport } from './report-generator.js';
+import { IMAGES_DIR } from './constants.js';
 import type { ComparisonResult } from './image-comparer.js';
 
 /**
@@ -44,13 +46,17 @@ export function compareDirectories(
   // Scan and match files
   const fileMatches = scanAndMatchFiles(baselineDir, candidateDir);
 
+  // Create images subdirectory for diff output
+  const imagesDir = join(outputDir, IMAGES_DIR);
+  mkdirSync(imagesDir, { recursive: true });
+
   // Load and compare matched PNG pairs
   const comparisonResults: ComparisonResult[] = fileMatches.matched.map((matched) => {
     const pngPair = new PngFilePair(
       matched.name,
       { name: matched.name, path: matched.baselinePath },
       { name: matched.name, path: matched.candidatePath },
-      outputDir,
+      imagesDir,
     );
 
     // Handle dimension mismatch - write PNGs and treat as 100% different

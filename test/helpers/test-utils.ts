@@ -51,22 +51,24 @@ export class TestDirectory {
   public readonly baselineDir: string;
   public readonly candidateDir: string;
   public readonly outputDir: string;
+  public readonly imagesDir: string;
 
   constructor(public readonly root: string) {
     this.baselineDir = join(root, 'baseline');
     this.candidateDir = join(root, 'candidate');
     this.outputDir = join(root, 'output');
+    this.imagesDir = join(root, 'output', 'images');
   }
 
   /**
-   * Sets up the test directory structure with baseline, candidate, and output dirs
+   * Sets up the test directory structure with baseline, candidate, output, and output/images dirs
    * Call this in beforeEach
    */
   setup(): void {
     rmSync(this.root, { recursive: true, force: true });
     mkdirSync(this.baselineDir, { recursive: true });
     mkdirSync(this.candidateDir, { recursive: true });
-    mkdirSync(this.outputDir, { recursive: true });
+    mkdirSync(this.imagesDir, { recursive: true });
   }
 
   /**
@@ -103,7 +105,7 @@ export class TestDirectory {
       name,
       { name, path: baselinePath },
       { name, path: candidatePath },
-      this.outputDir,
+      this.imagesDir,
     );
   }
 
