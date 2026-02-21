@@ -6,6 +6,7 @@ dist/
 
 # Testing
 coverage/
+results/
 
 # TypeScript
 *.tsbuildinfo

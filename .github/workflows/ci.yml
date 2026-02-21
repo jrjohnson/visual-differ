@@ -78,10 +78,7 @@ jobs:
       - run: mkdir -p ./results
       - name: Diff Samples, Expect Error
         run: |
-          #!/usr/bin/env bash
-          set -euo pipefail
-
-          node dist/bin/visual-differ.js samples/baseline/ samples/candidate/ ./results || rc=$?
+          pnpm run samples || rc=$?
           # rc will be set only when the node process exited non-zero
           if [ "${rc:-0}" -ne 0 ]; then
             echo "visual-differ exited with code ${rc} (expected)"; exit 0

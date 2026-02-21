@@ -19,7 +19,8 @@
     "format:check": "prettier --check \"**/*.{ts,json,md}\"",
     "typecheck": "tsc --noEmit",
     "prepare": "husky",
-    "prepublishOnly": "pnpm run typecheck && pnpm run lint && pnpm run test && pnpm run build"
+    "prepublishOnly": "pnpm run typecheck && pnpm run lint && pnpm run test && pnpm run build",
+    "samples": "node ./dist/bin/visual-differ.js samples/baseline/ samples/candidate/ ./results"
   },
   "keywords": [
     "screenshot",

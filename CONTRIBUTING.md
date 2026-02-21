@@ -16,6 +16,7 @@ pnpm test
 - `pnpm test` - Run tests
 - `pnpm lint` - Lint
 - `pnpm typecheck` - Type check
+- `pnpm run samples` - Creates a Sample diff in `results` test
 
 ## Workflow
 
