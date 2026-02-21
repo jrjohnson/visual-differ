@@ -26,3 +26,8 @@ export const IMAGES_DIR = 'images';
  * Name of the generated HTML report file
  */
 export const REPORT_FILENAME = 'index.html';
+
+/**
+ * Name of the generated Markdown report file
+ */
+export const MARKDOWN_REPORT_FILENAME = 'report.md';

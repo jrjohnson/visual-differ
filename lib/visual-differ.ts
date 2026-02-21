@@ -6,6 +6,7 @@ import { PngFilePair } from './png-file-pair.js';
 import { compareImages } from './image-comparer.js';
 import { calculateExitCode } from './exit-code-calculator.js';
 import { generateReport } from './report-generator.js';
+import { generateMarkdownReport } from './markdown-report-generator.js';
 import { IMAGES_DIR } from './constants.js';
 import type { ComparisonResult } from './image-comparer.js';
 
@@ -82,8 +83,14 @@ export function compareDirectories(
   // Calculate exit code
   const exitCode = calculateExitCode(comparisonResults, fileMatches.baselineOnly);
 
-  // Generate report
+  // Generate reports
   generateReport(comparisonResults, fileMatches.baselineOnly, fileMatches.candidateOnly, outputDir);
+  generateMarkdownReport(
+    comparisonResults,
+    fileMatches.baselineOnly,
+    fileMatches.candidateOnly,
+    outputDir,
+  );
 
   // Return summary
   const withDifferences = comparisonResults.filter((r) => r.hasDifference).length;

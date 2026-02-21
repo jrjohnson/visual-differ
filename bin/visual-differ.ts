@@ -91,7 +91,9 @@ program
           console.log('❌ Visual differences detected.');
         }
 
-        console.log(`\n📄 Report generated: ${resolvedOutput}/index.html\n`);
+        console.log(`\n📄 Reports generated:`);
+        console.log(`  HTML: ${resolvedOutput}/index.html`);
+        console.log(`  Markdown: ${resolvedOutput}/report.md\n`);
 
         process.exit(result.exitCode);
       } catch (error) {
