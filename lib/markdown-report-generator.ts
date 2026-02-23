@@ -37,7 +37,7 @@ function generateMarkdown(
   const lines: string[] = [];
 
   // Status header
-  lines.push(`# ${statusEmoji} Visual Diff Report — ${statusText}`);
+  lines.push(`### ${statusEmoji} Visual Diff Report — ${statusText}`);
   lines.push('');
 
   // Summary line
@@ -59,7 +59,7 @@ function generateMarkdown(
     lines.push('');
 
     if (withDifferences.length > 0) {
-      lines.push(`### Differences (${diffCount})`);
+      lines.push(`#### Differences (${diffCount})`);
       lines.push('');
       lines.push('| File | Diff % | Notes |');
       lines.push('|------|--------|-------|');
@@ -73,7 +73,7 @@ function generateMarkdown(
     }
 
     if (removedCount > 0) {
-      lines.push(`### Removed Files (${removedCount})`);
+      lines.push(`#### Removed Files (${removedCount})`);
       lines.push('');
       for (const file of baselineOnly) {
         lines.push(`- \`${file.name}\``);
@@ -82,7 +82,7 @@ function generateMarkdown(
     }
 
     if (addedCount > 0) {
-      lines.push(`### Added Files (${addedCount})`);
+      lines.push(`#### Added Files (${addedCount})`);
       lines.push('');
       for (const file of candidateOnly) {
         lines.push(`- \`${file.name}\``);
@@ -91,7 +91,7 @@ function generateMarkdown(
     }
 
     if (identicalCount > 0) {
-      lines.push(`### Identical Files (${identicalCount})`);
+      lines.push(`#### Identical Files (${identicalCount})`);
       lines.push('');
       for (const result of withoutDifferences) {
         lines.push(`- \`${result.pair.name}\``);
