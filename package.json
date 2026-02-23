@@ -21,7 +21,7 @@
     "prepare": "husky",
     "prepublishOnly": "pnpm run typecheck && pnpm run lint && pnpm run test && pnpm run build",
     "samples": "node ./dist/bin/visual-differ.js samples/baseline/ samples/candidate/ ./results",
-    "screenshots": "pnpm samples; playwright test"
+    "screenshots": "playwright test"
   },
   "keywords": [
     "screenshot",

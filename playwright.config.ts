@@ -20,5 +20,6 @@ const projects = browsers.flatMap((browser) =>
 
 export default defineConfig({
   testDir: './screenshot-tests',
+  globalSetup: './screenshot-tests/global-setup.ts',
   projects,
 });
