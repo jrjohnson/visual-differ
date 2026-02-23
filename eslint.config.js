@@ -40,7 +40,7 @@ export default [
     },
   },
   {
-    files: ['test/**/*.ts', '*.config.ts', '*.config.js'],
+    files: ['test/**/*.ts', 'screenshot-tests/**/*.ts', '*.config.ts', '*.config.js'],
     languageOptions: {
       parser: tsParser,
       globals: {

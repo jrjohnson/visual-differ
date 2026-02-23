@@ -16,5 +16,6 @@ export default defineConfig({
       },
     },
     include: ['**/*.test.ts'],
+    exclude: ['node_modules/**', 'dist/**', 'screenshot-tests/**'],
   },
 });
