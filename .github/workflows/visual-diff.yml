@@ -53,6 +53,7 @@ jobs:
     needs: [baseline, candidate]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v6
       - uses: actions/download-artifact@v7
       - run: ls -lh baseline candidate
       - uses: pnpm/action-setup@v4
