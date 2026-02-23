@@ -101,6 +101,26 @@
           sans-serif;
       }
 
+      .lightbox-link {
+        color: rgb(255 255 255 / 0.7);
+        font:
+          0.75rem/1 system-ui,
+          sans-serif;
+        text-decoration: none;
+        padding: 0.25rem 0.75rem;
+        border: 1px solid rgb(255 255 255 / 0.3);
+        border-radius: 4px;
+        transition:
+          color 0.15s,
+          border-color 0.15s;
+
+        &:hover,
+        &:focus-visible {
+          color: white;
+          border-color: white;
+        }
+      }
+
       .lightbox-btn {
         appearance: none;
         border: none;
@@ -259,6 +279,7 @@
         <img class="lightbox-image" src="" alt="" />
         <p class="lightbox-caption"></p>
         <span class="lightbox-counter"></span>
+        <a class="lightbox-link" href="" target="_blank" rel="noopener">Open image</a>
       </div>
     </dialog>
 
@@ -268,6 +289,7 @@
         const image = lightbox.querySelector('.lightbox-image');
         const caption = lightbox.querySelector('.lightbox-caption');
         const counter = lightbox.querySelector('.lightbox-counter');
+        const link = lightbox.querySelector('.lightbox-link');
         const prevBtn = lightbox.querySelector('.lightbox-prev');
         const nextBtn = lightbox.querySelector('.lightbox-next');
 
@@ -292,6 +314,7 @@
           image.alt = img.alt;
           caption.textContent = img.alt;
           counter.textContent = `${col + 1}\u2009/\u2009${grid[row].length}`;
+          link.href = img.src;
         };
 
         const open = (r, c) => {

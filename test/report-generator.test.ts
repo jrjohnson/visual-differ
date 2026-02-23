@@ -158,7 +158,7 @@ describe('report-generator', () => {
       expect(html).toContain('aria-label="Next image"');
     });
 
-    it('should include lightbox panel with image, caption, and counter', () => {
+    it('should include lightbox panel with image, caption, counter, and open link', () => {
       const pair = testDir.createPngFilePair('a.png', 'red', 'blue');
       const html = generateAndRead([{ pair, hasDifference: true, diffPercentage: 10 }]);
 
@@ -166,6 +166,7 @@ describe('report-generator', () => {
       expect(html).toContain('class="lightbox-image"');
       expect(html).toContain('class="lightbox-caption"');
       expect(html).toContain('class="lightbox-counter"');
+      expect(html).toContain('class="lightbox-link"');
     });
 
     it('should wrap images in button triggers instead of anchor tags', () => {
@@ -233,6 +234,32 @@ describe('report-generator', () => {
       expect(html).toContain('ArrowRight');
       expect(html).toContain('ArrowUp');
       expect(html).toContain('ArrowDown');
+    });
+
+    it('should render the open image link that opens in a new tab', () => {
+      const pair = testDir.createPngFilePair('a.png', 'red', 'blue');
+      const html = generateAndRead([{ pair, hasDifference: true, diffPercentage: 10 }]);
+
+      expect(html).toContain('<a class="lightbox-link"');
+      expect(html).toContain('target="_blank"');
+      expect(html).toContain('rel="noopener"');
+      expect(html).toContain('>Open image</a>');
+    });
+
+    it('should include script logic to update the open image link href', () => {
+      const pair = testDir.createPngFilePair('a.png', 'red', 'blue');
+      const html = generateAndRead([{ pair, hasDifference: true, diffPercentage: 10 }]);
+
+      expect(html).toContain('.lightbox-link');
+      expect(html).toContain('link.href = img.src');
+    });
+
+    it('should include CSS styles for the open image link', () => {
+      const pair = testDir.createPngFilePair('a.png', 'red', 'blue');
+      const html = generateAndRead([{ pair, hasDifference: true, diffPercentage: 10 }]);
+
+      expect(html).toContain('.lightbox-link');
+      expect(html).toContain('text-decoration: none');
     });
 
     it('should include lightbox CSS with zoom-in cursor and dialog styles', () => {
