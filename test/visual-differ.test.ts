@@ -82,7 +82,7 @@ describe('visual-differ', () => {
 
       compareDirectories(testDir.baselineDir, testDir.candidateDir, testDir.outputDir);
 
-      expect(existsSync(join(testDir.outputDir, 'changed-diff.png'))).toBe(true);
+      expect(existsSync(join(testDir.imagesDir, 'changed-diff.png'))).toBe(true);
     });
 
     it('should generate index.html report', () => {
@@ -223,8 +223,8 @@ describe('visual-differ', () => {
       expect(result.withDifferences).toBe(0);
       expect(result.withoutDifferences).toBe(2);
       // No diff files should be created when threshold=1
-      expect(existsSync(join(testDir.outputDir, 'image1-diff.png'))).toBe(false);
-      expect(existsSync(join(testDir.outputDir, 'image2-diff.png'))).toBe(false);
+      expect(existsSync(join(testDir.imagesDir, 'image1-diff.png'))).toBe(false);
+      expect(existsSync(join(testDir.imagesDir, 'image2-diff.png'))).toBe(false);
     });
 
     it('should detect differences with default threshold when not specified', () => {
@@ -240,7 +240,7 @@ describe('visual-differ', () => {
 
       expect(result.exitCode).toBe(1);
       expect(result.withDifferences).toBe(1);
-      expect(existsSync(join(testDir.outputDir, 'image1-diff.png'))).toBe(true);
+      expect(existsSync(join(testDir.imagesDir, 'image1-diff.png'))).toBe(true);
     });
   });
 });

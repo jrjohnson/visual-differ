@@ -54,7 +54,7 @@ describe('End-to-End Integration', () => {
     const html = readFileSync(htmlPath, 'utf-8');
 
     // Check structure
-    expect(html).toContain('<!DOCTYPE html>');
+    expect(html).toContain('<!doctype html>');
     expect(html).toContain('Visual Diff Report');
 
     // Check status
@@ -88,24 +88,24 @@ describe('End-to-End Integration', () => {
     expect(html).toContain('.diff-images');
     expect(html).toContain('max-width: 30vw');
 
-    // Verify diff images were created for files with differences
-    expect(existsSync(join(testDir.outputDir, 'changed-baseline.png'))).toBe(true);
-    expect(existsSync(join(testDir.outputDir, 'changed-candidate.png'))).toBe(true);
-    expect(existsSync(join(testDir.outputDir, 'changed-diff.png'))).toBe(true);
+    // Verify diff images were created in images subdirectory
+    expect(existsSync(join(testDir.imagesDir, 'changed-baseline.png'))).toBe(true);
+    expect(existsSync(join(testDir.imagesDir, 'changed-candidate.png'))).toBe(true);
+    expect(existsSync(join(testDir.imagesDir, 'changed-diff.png'))).toBe(true);
 
-    // Verify dimension mismatch images were created
-    expect(existsSync(join(testDir.outputDir, 'dimension-mismatch-baseline.png'))).toBe(true);
-    expect(existsSync(join(testDir.outputDir, 'dimension-mismatch-candidate.png'))).toBe(true);
+    // Verify dimension mismatch images were created in images subdirectory
+    expect(existsSync(join(testDir.imagesDir, 'dimension-mismatch-baseline.png'))).toBe(true);
+    expect(existsSync(join(testDir.imagesDir, 'dimension-mismatch-candidate.png'))).toBe(true);
 
     // Verify no images were created for identical files
-    expect(existsSync(join(testDir.outputDir, 'same-baseline.png'))).toBe(false);
-    expect(existsSync(join(testDir.outputDir, 'same-candidate.png'))).toBe(false);
-    expect(existsSync(join(testDir.outputDir, 'same-diff.png'))).toBe(false);
+    expect(existsSync(join(testDir.imagesDir, 'same-baseline.png'))).toBe(false);
+    expect(existsSync(join(testDir.imagesDir, 'same-candidate.png'))).toBe(false);
+    expect(existsSync(join(testDir.imagesDir, 'same-diff.png'))).toBe(false);
 
-    // Verify image references in HTML use basename only
-    expect(html).toContain('changed-baseline.png');
-    expect(html).toContain('changed-diff.png');
-    expect(html).toContain('changed-candidate.png');
+    // Verify image references in HTML use images/ prefix
+    expect(html).toContain('images/changed-baseline.png');
+    expect(html).toContain('images/changed-diff.png');
+    expect(html).toContain('images/changed-candidate.png');
     expect(html).not.toContain(testDir.outputDir); // Should not have absolute paths
   });
 
@@ -148,9 +148,9 @@ describe('End-to-End Integration', () => {
     const html = readFileSync(join(testDir.outputDir, 'index.html'), 'utf-8');
     expect(html).toContain('my test image.png');
 
-    // Verify files were created
-    expect(existsSync(join(testDir.outputDir, 'my test image-baseline.png'))).toBe(true);
-    expect(existsSync(join(testDir.outputDir, 'my test image-candidate.png'))).toBe(true);
-    expect(existsSync(join(testDir.outputDir, 'my test image-diff.png'))).toBe(true);
+    // Verify files were created in images subdirectory
+    expect(existsSync(join(testDir.imagesDir, 'my test image-baseline.png'))).toBe(true);
+    expect(existsSync(join(testDir.imagesDir, 'my test image-candidate.png'))).toBe(true);
+    expect(existsSync(join(testDir.imagesDir, 'my test image-diff.png'))).toBe(true);
   });
 });
