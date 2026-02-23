@@ -63,7 +63,7 @@ jobs:
       - run: pnpm install
       - run: pnpm build
       - name: Create Visual Diff
-        run: ./dist/bin/visual-differ.js baseline candidate results/visual-diff-${{ github.event.pull_request.number }}
+        run: node ./dist/bin/visual-differ.js baseline candidate results/visual-diff-${{ github.event.pull_request.number }}
       - uses: actions/upload-artifact@v6
         if: always()
         with:
