@@ -54,7 +54,7 @@ describe('End-to-End Integration', () => {
     const html = readFileSync(htmlPath, 'utf-8');
 
     // Check structure
-    expect(html).toContain('<!DOCTYPE html>');
+    expect(html).toContain('<!doctype html>');
     expect(html).toContain('Visual Diff Report');
 
     // Check status
