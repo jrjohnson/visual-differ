@@ -6,6 +6,10 @@ dist/
 
 # Testing
 coverage/
+results/
+build/
+test-results/
+playwright-report/
 
 # TypeScript
 *.tsbuildinfo
