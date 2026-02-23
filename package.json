@@ -21,7 +21,7 @@
     "typecheck": "tsc --noEmit",
     "prepare": "husky",
     "prepublishOnly": "pnpm run typecheck && pnpm run lint && pnpm run test && pnpm run build",
-    "samples": "node ./dist/bin/visual-differ.js samples/baseline/ samples/candidate/ ./results"
+    "samples": "tsc && cp -r templates dist/; node ./dist/bin/visual-differ.js samples/baseline/ samples/candidate/ ./results"
   },
   "keywords": [
     "screenshot",

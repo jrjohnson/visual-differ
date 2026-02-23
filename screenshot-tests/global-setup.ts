@@ -4,14 +4,10 @@ import path from 'node:path';
 function globalSetup(): void {
   const projectRoot = path.resolve(import.meta.dirname, '..');
   try {
-    execFileSync(
-      'node',
-      ['./dist/bin/visual-differ.js', 'samples/baseline/', 'samples/candidate/', './results'],
-      {
-        cwd: projectRoot,
-        stdio: 'inherit',
-      },
-    );
+    execFileSync('pnpm', ['samples'], {
+      cwd: projectRoot,
+      stdio: 'inherit',
+    });
   } catch (error: unknown) {
     // Exit code 1 is expected — it means visual differences were detected
     if (error instanceof Error && 'status' in error && error.status !== 1) {
