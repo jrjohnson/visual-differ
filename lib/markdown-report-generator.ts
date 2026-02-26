@@ -1,6 +1,6 @@
 import { writeFileSync } from 'fs';
 import { join } from 'path';
-import { MARKDOWN_REPORT_FILENAME } from './constants.js';
+import { MARKDOWN_REPORT_FILENAME, MAX_FILES_SHOWN } from './constants.js';
 import type { ComparisonResult } from './image-comparer.js';
 import type { ScannedFile } from './file-scanner.js';
 
@@ -49,7 +49,6 @@ function generateMarkdown(
   lines.push(`**${totalImages}** images compared: ${parts.join(' · ')}`);
   lines.push('');
 
-  // Details section with all file lists
   const hasDetails =
     withDifferences.length > 0 || removedCount > 0 || addedCount > 0 || identicalCount > 0;
 
@@ -59,33 +58,45 @@ function generateMarkdown(
     lines.push('');
 
     if (withDifferences.length > 0) {
+      const shown = withDifferences.slice(0, MAX_FILES_SHOWN);
       lines.push(`#### Differences (${diffCount})`);
       lines.push('');
       lines.push('| File | Diff % | Notes |');
       lines.push('|------|--------|-------|');
-      for (const result of withDifferences) {
+      for (const result of shown) {
         const notes = result.dimensionMismatch
           ? `⚠️ Dimension mismatch (${result.dimensionMismatch.baseline} → ${result.dimensionMismatch.candidate})`
           : '';
         lines.push(`| ${result.pair.name} | ${result.diffPercentage.toFixed(2)}% | ${notes} |`);
       }
+      if (withDifferences.length > MAX_FILES_SHOWN) {
+        lines.push(`| … and ${withDifferences.length - MAX_FILES_SHOWN} more | | |`);
+      }
       lines.push('');
     }
 
     if (removedCount > 0) {
+      const shown = baselineOnly.slice(0, MAX_FILES_SHOWN);
       lines.push(`#### Removed Files (${removedCount})`);
       lines.push('');
-      for (const file of baselineOnly) {
+      for (const file of shown) {
         lines.push(`- \`${file.name}\``);
+      }
+      if (removedCount > MAX_FILES_SHOWN) {
+        lines.push(`- … and ${removedCount - MAX_FILES_SHOWN} more`);
       }
       lines.push('');
     }
 
     if (addedCount > 0) {
+      const shown = candidateOnly.slice(0, MAX_FILES_SHOWN);
       lines.push(`#### Added Files (${addedCount})`);
       lines.push('');
-      for (const file of candidateOnly) {
+      for (const file of shown) {
         lines.push(`- \`${file.name}\``);
+      }
+      if (addedCount > MAX_FILES_SHOWN) {
+        lines.push(`- … and ${addedCount - MAX_FILES_SHOWN} more`);
       }
       lines.push('');
     }

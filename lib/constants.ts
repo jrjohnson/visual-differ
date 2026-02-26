@@ -31,3 +31,8 @@ export const REPORT_FILENAME = 'index.html';
  * Name of the generated Markdown report file
  */
 export const MARKDOWN_REPORT_FILENAME = 'report.md';
+
+/**
+ * Maximum number of files shown per section in the Markdown report
+ */
+export const MAX_FILES_SHOWN = 25;
