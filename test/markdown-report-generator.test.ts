@@ -115,17 +115,23 @@ describe('markdown-report-generator', () => {
       expect(md).toContain('`new.png`');
     });
 
-    it('should wrap all file lists in a single collapsible details section', () => {
-      const pair = testDir.createPngFilePair('same.png', 'red', 'red');
-      const md = generateAndRead([{ pair, hasDifference: false, diffPercentage: 0 }]);
+    it('should wrap file lists in a collapsible details section', () => {
+      const pair = testDir.createPngFilePair('changed.png', 'red', 'blue');
+      const md = generateAndRead([{ pair, hasDifference: true, diffPercentage: 5 }]);
 
       expect(md).toContain('<details>');
       expect(md).toContain('<summary>Details</summary>');
-      expect(md).toContain('Identical Files (1)');
-      expect(md).toContain('`same.png`');
       expect(md).toContain('</details>');
       const detailsCount = (md.match(/<details>/g) ?? []).length;
       expect(detailsCount).toBe(1);
+    });
+
+    it('should not list identical files', () => {
+      const pair = testDir.createPngFilePair('same.png', 'red', 'red');
+      const md = generateAndRead([{ pair, hasDifference: false, diffPercentage: 0 }]);
+
+      expect(md).not.toContain('Identical Files');
+      expect(md).toContain('**1** identical');
     });
 
     it('should omit sub-sections that have no entries', () => {

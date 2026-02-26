@@ -49,8 +49,7 @@ function generateMarkdown(
   lines.push(`**${totalImages}** images compared: ${parts.join(' · ')}`);
   lines.push('');
 
-  const hasDetails =
-    withDifferences.length > 0 || removedCount > 0 || addedCount > 0 || identicalCount > 0;
+  const hasDetails = withDifferences.length > 0 || removedCount > 0 || addedCount > 0;
 
   if (hasDetails) {
     lines.push('<details>');
@@ -97,15 +96,6 @@ function generateMarkdown(
       }
       if (addedCount > MAX_FILES_SHOWN) {
         lines.push(`- … and ${addedCount - MAX_FILES_SHOWN} more`);
-      }
-      lines.push('');
-    }
-
-    if (identicalCount > 0) {
-      lines.push(`#### Identical Files (${identicalCount})`);
-      lines.push('');
-      for (const result of withoutDifferences) {
-        lines.push(`- \`${result.pair.name}\``);
       }
       lines.push('');
     }
