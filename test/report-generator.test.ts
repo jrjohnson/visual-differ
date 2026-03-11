@@ -158,14 +158,15 @@ describe('report-generator', () => {
       expect(html).toContain('aria-label="Next image"');
     });
 
-    it('should include lightbox panel with image, caption, counter, and open link', () => {
+    it('should include lightbox panel with image, caption, counters, and open link', () => {
       const pair = testDir.createPngFilePair('a.png', 'red', 'blue');
       const html = generateAndRead([{ pair, hasDifference: true, diffPercentage: 10 }]);
 
       expect(html).toContain('class="lightbox-panel"');
       expect(html).toContain('class="lightbox-image"');
       expect(html).toContain('class="lightbox-caption"');
-      expect(html).toContain('class="lightbox-counter"');
+      expect(html).toContain('class="lightbox-image-counter"');
+      expect(html).toContain('class="lightbox-row-counter"');
       expect(html).toContain('class="lightbox-link"');
     });
 

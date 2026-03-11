@@ -95,7 +95,13 @@
         margin: 0;
       }
 
-      .lightbox-counter {
+      .lightbox-counters {
+        display: flex;
+        gap: 1em;
+      }
+
+      .lightbox-image-counter,
+      .lightbox-row-counter {
         color: rgb(255 255 255 / 0.5);
         font:
           0.75rem/1 system-ui,
@@ -279,7 +285,10 @@
       <div class="lightbox-panel">
         <img class="lightbox-image" src="" alt="" />
         <p class="lightbox-caption"></p>
-        <span class="lightbox-counter"></span>
+        <div class="lightbox-counters">
+          <span class="lightbox-image-counter"></span>
+          <span class="lightbox-row-counter"></span>
+        </div>
         <a class="lightbox-link" href="" target="_blank" rel="noopener">Open image</a>
       </div>
     </dialog>
@@ -289,7 +298,8 @@
         const lightbox = document.querySelector('#lightbox');
         const image = lightbox.querySelector('.lightbox-image');
         const caption = lightbox.querySelector('.lightbox-caption');
-        const counter = lightbox.querySelector('.lightbox-counter');
+        const imageCounter = lightbox.querySelector('.lightbox-image-counter');
+        const rowCounter = lightbox.querySelector('.lightbox-row-counter');
         const link = lightbox.querySelector('.lightbox-link');
         const prevBtn = lightbox.querySelector('.lightbox-prev');
         const nextBtn = lightbox.querySelector('.lightbox-next');
@@ -314,7 +324,8 @@
           image.src = img.src;
           image.alt = img.alt;
           caption.textContent = img.alt;
-          counter.textContent = `${col + 1}\u2009/\u2009${grid[row].length}`;
+          imageCounter.textContent = `Image ${col + 1}\u2009/\u2009${grid[row].length}`;
+          rowCounter.textContent = `Row ${row + 1}\u2009/\u2009${grid.length}`;
           link.href = img.src;
         };
 
