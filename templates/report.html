@@ -79,6 +79,13 @@
         gap: 0.75rem;
       }
 
+      .lightbox-image-filename {
+        color: rgb(255 255 255 / 0.9);
+        font:
+          bold 1rem/1.4 system-ui,
+          sans-serif;
+      }
+
       .lightbox-image {
         max-height: calc(100dvh - 4rem);
         max-width: 100dvw;
@@ -283,6 +290,7 @@
         <svg class="lightbox-icon" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18" /></svg>
       </button>
       <div class="lightbox-panel">
+        <span class="lightbox-image-filename"></span>
         <img class="lightbox-image" src="" alt="" />
         <p class="lightbox-caption"></p>
         <div class="lightbox-counters">
@@ -296,6 +304,7 @@
     <script>
       (() => {
         const lightbox = document.querySelector('#lightbox');
+        const filename = lightbox.querySelector('.lightbox-image-filename');
         const image = lightbox.querySelector('.lightbox-image');
         const caption = lightbox.querySelector('.lightbox-caption');
         const imageCounter = lightbox.querySelector('.lightbox-image-counter');
@@ -321,6 +330,7 @@
           row = r;
           col = c;
           const img = grid[row][col].querySelector('img');
+          filename.textContent = img.alt.split(' ').reverse()[0];
           image.src = img.src;
           image.alt = img.alt;
           caption.textContent = img.alt;
