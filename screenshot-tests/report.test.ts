@@ -9,6 +9,7 @@ test('report', async ({ page, browserName }) => {
   await page.goto(reportUrl);
 
   const viewport = page.viewportSize()!;
+  await page.waitForTimeout(500); //wait for animations and transitions to finish
   await page.screenshot({
     path: path.join(buildDir, `${browserName}-${viewport.width}x${viewport.height}-report.png`),
     fullPage: true,
@@ -36,6 +37,7 @@ test('each image click', async ({ page, browserName }) => {
     await img.click();
     await page.waitForLoadState('load');
 
+    await page.waitForTimeout(500); //wait for animations and transitions to finish
     await page.screenshot({
       path: path.join(buildDir, `${prefix}-${slug}.png`),
       fullPage: true,
