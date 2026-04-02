@@ -44,3 +44,86 @@ test('each image click', async ({ page, browserName }) => {
     });
   }
 });
+
+test('cycle images in row on left/right keyboard input', async ({ page }) => {
+  await page.goto(reportUrl);
+
+  await page.locator('.diff-images button').first().click();
+  await expect(page.locator('dialog#lightbox')).toBeVisible();
+
+  const firstImageCounter = page.locator('.lightbox-image-counter').first();
+
+  await expect(firstImageCounter).toHaveText('Image 1 / 3');
+
+  await page.keyboard.press('ArrowRight');
+  await expect(firstImageCounter).toHaveText('Image 2 / 3');
+
+  await page.keyboard.press('ArrowRight');
+  await expect(firstImageCounter).toHaveText('Image 3 / 3');
+
+  await page.keyboard.press('ArrowRight');
+  await expect(firstImageCounter).toHaveText('Image 1 / 3');
+
+  await page.keyboard.press('ArrowLeft');
+  await expect(firstImageCounter).toHaveText('Image 3 / 3');
+
+  await page.keyboard.press('ArrowLeft');
+  await expect(firstImageCounter).toHaveText('Image 2 / 3');
+
+  await page.keyboard.press('ArrowLeft');
+  await expect(firstImageCounter).toHaveText('Image 1 / 3');
+});
+
+test('cycle rows on up/down keyboard input', async ({ page }) => {
+  await page.goto(reportUrl);
+
+  await page.locator('.diff-images button').first().click();
+  await expect(page.locator('dialog#lightbox')).toBeVisible();
+
+  const firstRowCounter = page.locator('.lightbox-row-counter').first();
+
+  await expect(firstRowCounter).toHaveText('Row 1 / 4');
+
+  await page.keyboard.press('ArrowDown');
+  await expect(firstRowCounter).toHaveText('Row 2 / 4');
+
+  await page.keyboard.press('ArrowDown');
+  await expect(firstRowCounter).toHaveText('Row 3 / 4');
+
+  await page.keyboard.press('ArrowDown');
+  await expect(firstRowCounter).toHaveText('Row 4 / 4');
+
+  await page.keyboard.press('ArrowDown');
+  await expect(firstRowCounter).toHaveText('Row 1 / 4');
+
+  await page.keyboard.press('ArrowUp');
+  await expect(firstRowCounter).toHaveText('Row 4 / 4');
+
+  await page.keyboard.press('ArrowUp');
+  await expect(firstRowCounter).toHaveText('Row 3 / 4');
+
+  await page.keyboard.press('ArrowUp');
+  await expect(firstRowCounter).toHaveText('Row 2 / 4');
+
+  await page.keyboard.press('ArrowUp');
+  await expect(firstRowCounter).toHaveText('Row 1 / 4');
+});
+
+test('show temporary modals when wrapping top <-> bottom', async ({ page }) => {
+  await page.goto(reportUrl);
+
+  await page.locator('.diff-images button').first().click();
+  await expect(page.locator('dialog#lightbox')).toBeVisible();
+
+  const firstRowCounter = page.locator('.lightbox-row-counter').first();
+
+  await expect(firstRowCounter).toHaveText('Row 1 / 4');
+
+  await page.keyboard.press('ArrowUp');
+  await expect(firstRowCounter).toHaveText('Row 4 / 4');
+  await expect(page.getByRole('dialog').filter({ hasText: /^Wrapped to bottom$/ })).toBeVisible();
+
+  await page.keyboard.press('ArrowDown');
+  await expect(firstRowCounter).toHaveText('Row 1 / 4');
+  await expect(page.getByRole('dialog').filter({ hasText: /^Wrapped to top$/ })).toBeVisible();
+});
