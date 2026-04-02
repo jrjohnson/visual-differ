@@ -43,6 +43,8 @@
       }
 
       #lightbox {
+        z-index: 1;
+
         &[open] {
           position: fixed;
           inset: 0;
@@ -192,6 +194,45 @@
         stroke-linecap: round;
         stroke-linejoin: round;
       }
+
+      #modal-window {
+        background-color: #000;
+        border: 2px solid #fff;
+        border-radius: 8px;
+        color: #fff;
+        display: flex;
+        justify-self: center;
+        margin: 0 auto;
+        max-height: 95%;
+        max-width: 500px;
+        opacity: 0;
+        padding: 0;
+        position: fixed;
+        top: 20px;
+        width: fit-content;
+
+        &.load {
+          opacity: 1;
+          transition: opacity 200ms ease-in-out;
+        }
+
+        &.remove {
+          opacity: 0;
+          transition: opacity 500ms ease-in-out;
+        }
+
+        .modal-text {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5em;
+          justify-content: center;
+          line-height: 1.1;
+          margin: 0;
+          overflow-y: auto;
+          padding: 10px 5px;
+          width: 100%;
+        }
+      }
     </style>
   </head>
   <body>
@@ -302,6 +343,63 @@
     </dialog>
 
     <script>
+      class Modal {
+        constructor(modalText) {
+          this.modalDelay = 1500;
+          this.modalText = modalText;
+          this.parent = document.getElementById('lightbox');
+
+          this.modal = null;
+          this._createModal();
+
+          let modal = this;
+          setTimeout(
+            function (modal) {
+              modal._destroyModal(false);
+            }.bind(this, modal),
+            this.modalDelay,
+          );
+        }
+
+        _createModal() {
+          this.modal = document.createElement('dialog');
+          this.modal.id = 'modal-window';
+
+          const text = document.createElement('div');
+          text.classList.add('modal-text');
+          text.innerHTML = this.modalText;
+          this.modal.appendChild(text);
+
+          this.parent.appendChild(this.modal);
+
+          setTimeout(() => this.modal.classList.add('load'), 1);
+        }
+
+        _destroyModal(immediate = false) {
+          if (this.modal) {
+            const modal = document.getElementById('modal-window');
+
+            if (this.parent.contains(modal)) {
+              // remove modal immediately
+              if (immediate) {
+                this.parent.removeChild(modal);
+                delete this;
+              }
+              // fade out modal gently
+              else {
+                this.modal.classList.remove('load');
+                this.modal.classList.add('remove');
+
+                this.modal.addEventListener('transitionend', () => {
+                  this.parent.removeChild(modal);
+                  delete this;
+                });
+              }
+            }
+          }
+        }
+      }
+
       (() => {
         const lightbox = document.querySelector('#lightbox');
         const filename = lightbox.querySelector('.lightbox-image-filename');
@@ -368,12 +466,24 @@
               event.preventDefault();
               const upRow = wrapRow(row - 1);
               show(upRow, Math.min(col, grid[upRow].length - 1));
+              if (upRow == grid[upRow].length) {
+                if (window.tempModal) {
+                  window.tempModal._destroyModal();
+                }
+                window.tempModal = new Modal('Wrapped to bottom');
+              }
               break;
             }
             case 'ArrowDown': {
               event.preventDefault();
               const downRow = wrapRow(row + 1);
               show(downRow, Math.min(col, grid[downRow].length - 1));
+              if (downRow == 0) {
+                if (window.tempModal) {
+                  window.tempModal._destroyModal();
+                }
+                window.tempModal = new Modal('Wrapped to top');
+              }
               break;
             }
           }
