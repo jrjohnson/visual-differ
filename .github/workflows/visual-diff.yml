@@ -15,7 +15,7 @@ jobs:
     outputs:
       ref: ${{ steps.ref.outputs.ref }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.base_ref }}
       - id: ref
@@ -52,7 +52,7 @@ jobs:
     outputs:
       ref: ${{ steps.ref.outputs.ref }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - id: ref
         run: |
           echo "$(git rev-parse HEAD)"
@@ -90,7 +90,7 @@ jobs:
       BASELINE_REF: ${{needs.baseline.outputs.ref}}
       CANDIDATE_REF: ${{needs.candidate.outputs.ref}}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
         with:
           node-version: 24
