@@ -29,7 +29,7 @@ jobs:
           path: build
           key: screenshots-${{ steps.ref.outputs.ref }}
       - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
@@ -64,7 +64,7 @@ jobs:
           path: build
           key: screenshots-${{ steps.ref.outputs.ref }}-${{ matrix.name }}
       - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
@@ -91,7 +91,7 @@ jobs:
       CANDIDATE_REF: ${{needs.candidate.outputs.ref}}
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
       - uses: pnpm/action-setup@v6
