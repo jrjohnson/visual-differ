@@ -89,10 +89,31 @@ jobs:
         with:
           path: results
 
-  cache-baseline:
-    name: Cache Baseline
+  playwright-version:
+    name: Resolve Playwright Version
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.playwright.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - id: playwright
+        name: Read Playwright Version
+        run: |
+          version=$(pnpm ls --json --lockfile-only --dev @playwright/test | jq -r '.[0].devDependencies["@playwright/test"].version')
+          echo "@playwright/test version: ${version}"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+  cache-baseline:
+    name: Cache Baseline
+    needs: playwright-version
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v${{ needs.playwright-version.outputs.version }}-noble
+      options: --user 1001
     steps:
       - uses: actions/checkout@v7
       - name: Cache Screenshots
@@ -108,9 +129,7 @@ jobs:
           cache: pnpm
       - name: Install Dependencies
         if: steps.screenshot-cache.outputs.cache-hit != 'true'
-        run: |
-          pnpm install
-          pnpm exec playwright install --with-deps
+        run: pnpm install
       - name: Capture Screenshots
         if: steps.screenshot-cache.outputs.cache-hit != 'true'
         run: pnpm run test:screenshots
