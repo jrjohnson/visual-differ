@@ -1,6 +1,7 @@
 import { mkdirSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { PngFilePair } from '../../lib/png-file-pair.js';
+import type { ComparisonResult } from '../../lib/image-comparer.js';
 
 /**
  * PNG test fixtures - minimal valid PNG images
@@ -128,4 +129,25 @@ export class TestDirectory {
   writeCandidate(name: string, fixture: PngFixture): void {
     writeFileSync(join(this.candidateDir, name), getPngBuffer(fixture));
   }
+}
+
+// The outcome of a comparison a test wants to simulate, independent of which files were compared
+export interface ComparisonOutcome {
+  hasDifference: boolean;
+  diffPercentage: number;
+  dimensionMismatch?: {
+    baseline: string;
+    candidate: string;
+  };
+}
+
+// Builds a ComparisonResult from a loaded PngFilePair plus the outcome fields under test
+export function createComparison(pair: PngFilePair, outcome: ComparisonOutcome): ComparisonResult {
+  return {
+    name: pair.name,
+    baselinePath: pair.baselinePath,
+    candidatePath: pair.candidatePath,
+    diffPath: pair.diffPath,
+    ...outcome,
+  };
 }

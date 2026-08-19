@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import { TestDirectory } from './helpers/test-utils.js';
+import { TestDirectory, createComparison } from './helpers/test-utils.js';
 import { generateReport } from '../lib/report-generator.js';
 import type { ComparisonResult } from '../lib/image-comparer.js';
 import type { ScannedFile } from '../lib/file-scanner.js';
@@ -31,11 +31,7 @@ describe('report-generator', () => {
     it('should include summary with counts', () => {
       const pair = testDir.createPngFilePair('changed.png', 'red', 'blue');
       const comparisonResults: ComparisonResult[] = [
-        {
-          pair,
-          hasDifference: true,
-          diffPercentage: 25.5,
-        },
+        createComparison(pair, { hasDifference: true, diffPercentage: 25.5 }),
       ];
       const baselineOnly: ScannedFile[] = [{ name: 'deleted.png', path: '/baseline/deleted.png' }];
       const candidateOnly: ScannedFile[] = [{ name: 'new.png', path: '/candidate/new.png' }];
@@ -54,11 +50,7 @@ describe('report-generator', () => {
     it('should show three images side-by-side for differences', () => {
       const pair = testDir.createPngFilePair('changed.png', 'red', 'blue');
       const comparisonResults: ComparisonResult[] = [
-        {
-          pair,
-          hasDifference: true,
-          diffPercentage: 15.75,
-        },
+        createComparison(pair, { hasDifference: true, diffPercentage: 15.75 }),
       ];
       const baselineOnly: ScannedFile[] = [];
       const candidateOnly: ScannedFile[] = [];
@@ -77,12 +69,11 @@ describe('report-generator', () => {
     it('should handle dimension mismatch display', () => {
       const pair = testDir.createPngFilePair('mismatched.png', 'red', 'largeRed');
       const comparisonResults: ComparisonResult[] = [
-        {
-          pair,
+        createComparison(pair, {
           hasDifference: true,
           diffPercentage: 100,
           dimensionMismatch: { baseline: '10x20', candidate: '20x30' },
-        },
+        }),
       ];
       const baselineOnly: ScannedFile[] = [];
       const candidateOnly: ScannedFile[] = [];
@@ -102,11 +93,7 @@ describe('report-generator', () => {
     it('should show status indicator', () => {
       const pair = testDir.createPngFilePair('changed.png', 'red', 'blue');
       const comparisonResults: ComparisonResult[] = [
-        {
-          pair,
-          hasDifference: true,
-          diffPercentage: 15.75,
-        },
+        createComparison(pair, { hasDifference: true, diffPercentage: 15.75 }),
       ];
       const baselineOnly: ScannedFile[] = [];
       const candidateOnly: ScannedFile[] = [];
@@ -121,11 +108,7 @@ describe('report-generator', () => {
     it('should show success status when no differences', () => {
       const pair = testDir.createPngFilePair('unchanged.png', 'red', 'red');
       const comparisonResults: ComparisonResult[] = [
-        {
-          pair,
-          hasDifference: false,
-          diffPercentage: 0,
-        },
+        createComparison(pair, { hasDifference: false, diffPercentage: 0 }),
       ];
       const baselineOnly: ScannedFile[] = [];
       const candidateOnly: ScannedFile[] = [];
@@ -150,7 +133,9 @@ describe('report-generator', () => {
 
     it('should include a dialog element with accessible labeling', () => {
       const pair = testDir.createPngFilePair('a.png', 'red', 'blue');
-      const html = generateAndRead([{ pair, hasDifference: true, diffPercentage: 10 }]);
+      const html = generateAndRead([
+        createComparison(pair, { hasDifference: true, diffPercentage: 10 }),
+      ]);
 
       expect(html).toContain('<dialog id="lightbox" aria-label="Image viewer">');
       expect(html).toContain('aria-label="Close"');
@@ -160,7 +145,9 @@ describe('report-generator', () => {
 
     it('should include lightbox panel with filename, image, caption, counters, and open link', () => {
       const pair = testDir.createPngFilePair('a.png', 'red', 'blue');
-      const html = generateAndRead([{ pair, hasDifference: true, diffPercentage: 10 }]);
+      const html = generateAndRead([
+        createComparison(pair, { hasDifference: true, diffPercentage: 10 }),
+      ]);
 
       expect(html).toContain('class="lightbox-panel"');
       expect(html).toContain('class="lightbox-image-filename"');
@@ -173,7 +160,9 @@ describe('report-generator', () => {
 
     it('should wrap images in button triggers instead of anchor tags', () => {
       const pair = testDir.createPngFilePair('a.png', 'red', 'blue');
-      const html = generateAndRead([{ pair, hasDifference: true, diffPercentage: 10 }]);
+      const html = generateAndRead([
+        createComparison(pair, { hasDifference: true, diffPercentage: 10 }),
+      ]);
 
       expect(html).toContain('<button type="button" class="lightbox-trigger">');
       expect(html).not.toMatch(/<a href="images\//);
@@ -181,7 +170,9 @@ describe('report-generator', () => {
 
     it('should render three triggers per normal diff group', () => {
       const pair = testDir.createPngFilePair('a.png', 'red', 'blue');
-      const html = generateAndRead([{ pair, hasDifference: true, diffPercentage: 10 }]);
+      const html = generateAndRead([
+        createComparison(pair, { hasDifference: true, diffPercentage: 10 }),
+      ]);
 
       const triggerCount = (html.match(/class="lightbox-trigger"/g) ?? []).length;
       expect(triggerCount).toBe(3);
@@ -190,12 +181,11 @@ describe('report-generator', () => {
     it('should render two triggers for dimension mismatch groups', () => {
       const pair = testDir.createPngFilePair('a.png', 'red', 'largeRed');
       const html = generateAndRead([
-        {
-          pair,
+        createComparison(pair, {
           hasDifference: true,
           diffPercentage: 100,
           dimensionMismatch: { baseline: '1x1', candidate: '2x2' },
-        },
+        }),
       ]);
 
       const triggerCount = (html.match(/class="lightbox-trigger"/g) ?? []).length;
@@ -206,8 +196,8 @@ describe('report-generator', () => {
       const pairA = testDir.createPngFilePair('a.png', 'red', 'blue');
       const pairB = testDir.createPngFilePair('b.png', 'red', 'blue');
       const html = generateAndRead([
-        { pair: pairA, hasDifference: true, diffPercentage: 10 },
-        { pair: pairB, hasDifference: true, diffPercentage: 20 },
+        createComparison(pairA, { hasDifference: true, diffPercentage: 10 }),
+        createComparison(pairB, { hasDifference: true, diffPercentage: 20 }),
       ]);
 
       const groupCount = (html.match(/class="diff-images"/g) ?? []).length;
@@ -219,7 +209,9 @@ describe('report-generator', () => {
 
     it('should not render any lightbox triggers when there are no differences', () => {
       const pair = testDir.createPngFilePair('same.png', 'red', 'red');
-      const html = generateAndRead([{ pair, hasDifference: false, diffPercentage: 0 }]);
+      const html = generateAndRead([
+        createComparison(pair, { hasDifference: false, diffPercentage: 0 }),
+      ]);
 
       expect(html).not.toContain('class="lightbox-trigger"');
       expect(html).not.toContain('class="diff-images"');
@@ -227,7 +219,9 @@ describe('report-generator', () => {
 
     it('should include the lightbox script with 2D grid navigation', () => {
       const pair = testDir.createPngFilePair('a.png', 'red', 'blue');
-      const html = generateAndRead([{ pair, hasDifference: true, diffPercentage: 10 }]);
+      const html = generateAndRead([
+        createComparison(pair, { hasDifference: true, diffPercentage: 10 }),
+      ]);
 
       expect(html).toContain('<script>');
       expect(html).toContain('.diff-images');
@@ -240,7 +234,9 @@ describe('report-generator', () => {
 
     it('should render the open image link that opens in a new tab', () => {
       const pair = testDir.createPngFilePair('a.png', 'red', 'blue');
-      const html = generateAndRead([{ pair, hasDifference: true, diffPercentage: 10 }]);
+      const html = generateAndRead([
+        createComparison(pair, { hasDifference: true, diffPercentage: 10 }),
+      ]);
 
       expect(html).toContain('<a class="lightbox-link"');
       expect(html).toContain('target="_blank"');
@@ -250,7 +246,9 @@ describe('report-generator', () => {
 
     it('should include script logic to update the open image link href', () => {
       const pair = testDir.createPngFilePair('a.png', 'red', 'blue');
-      const html = generateAndRead([{ pair, hasDifference: true, diffPercentage: 10 }]);
+      const html = generateAndRead([
+        createComparison(pair, { hasDifference: true, diffPercentage: 10 }),
+      ]);
 
       expect(html).toContain('.lightbox-link');
       expect(html).toContain('link.href = img.src');
@@ -258,7 +256,9 @@ describe('report-generator', () => {
 
     it('should include CSS styles for the open image link', () => {
       const pair = testDir.createPngFilePair('a.png', 'red', 'blue');
-      const html = generateAndRead([{ pair, hasDifference: true, diffPercentage: 10 }]);
+      const html = generateAndRead([
+        createComparison(pair, { hasDifference: true, diffPercentage: 10 }),
+      ]);
 
       expect(html).toContain('.lightbox-link');
       expect(html).toContain('text-decoration: none');
@@ -266,7 +266,9 @@ describe('report-generator', () => {
 
     it('should include lightbox CSS with zoom-in cursor and dialog styles', () => {
       const pair = testDir.createPngFilePair('a.png', 'red', 'blue');
-      const html = generateAndRead([{ pair, hasDifference: true, diffPercentage: 10 }]);
+      const html = generateAndRead([
+        createComparison(pair, { hasDifference: true, diffPercentage: 10 }),
+      ]);
 
       expect(html).toContain('cursor: zoom-in');
       expect(html).toContain('#lightbox');
@@ -278,13 +280,12 @@ describe('report-generator', () => {
       const normalPair = testDir.createPngFilePair('normal.png', 'red', 'blue');
       const mismatchPair = testDir.createPngFilePair('mismatch.png', 'red', 'largeRed');
       const html = generateAndRead([
-        { pair: normalPair, hasDifference: true, diffPercentage: 10 },
-        {
-          pair: mismatchPair,
+        createComparison(normalPair, { hasDifference: true, diffPercentage: 10 }),
+        createComparison(mismatchPair, {
           hasDifference: true,
           diffPercentage: 100,
           dimensionMismatch: { baseline: '1x1', candidate: '2x2' },
-        },
+        }),
       ]);
 
       const triggerCount = (html.match(/class="lightbox-trigger"/g) ?? []).length;

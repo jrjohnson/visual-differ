@@ -20,11 +20,19 @@ export interface DimensionMismatch {
 export class PngFilePair {
   public readonly name: string;
   public readonly outputDir: string;
+  public readonly baselineSourcePath: string;
+  public readonly candidateSourcePath: string;
   public readonly width: number;
   public readonly height: number;
-  public readonly baselinePng: PNG;
-  public readonly candidatePng: PNG;
   public readonly dimensionMismatch?: DimensionMismatch;
+
+  get baselinePng(): PNG {
+    return PNG.sync.read(readFileSync(this.baselineSourcePath));
+  }
+
+  get candidatePng(): PNG {
+    return PNG.sync.read(readFileSync(this.candidateSourcePath));
+  }
 
   /**
    * Gets the baseline image pixel data buffer
@@ -85,28 +93,24 @@ export class PngFilePair {
   constructor(name: string, baseline: ScannedFile, candidate: ScannedFile, outputDir: string) {
     this.name = name;
     this.outputDir = outputDir;
+    this.baselineSourcePath = baseline.path;
+    this.candidateSourcePath = candidate.path;
 
     // Read PNGs
-    const baselineBuffer = readFileSync(baseline.path);
-    this.baselinePng = PNG.sync.read(baselineBuffer);
-
-    const candidateBuffer = readFileSync(candidate.path);
-    this.candidatePng = PNG.sync.read(candidateBuffer);
+    const baselinePng = this.baselinePng;
+    const candidatePng = this.candidatePng;
 
     // Always use baseline dimensions
-    this.width = this.baselinePng.width;
-    this.height = this.baselinePng.height;
+    this.width = baselinePng.width;
+    this.height = baselinePng.height;
 
     // Check for dimension mismatch
-    if (
-      this.baselinePng.width !== this.candidatePng.width ||
-      this.baselinePng.height !== this.candidatePng.height
-    ) {
+    if (baselinePng.width !== candidatePng.width || baselinePng.height !== candidatePng.height) {
       this.dimensionMismatch = {
-        baselineWidth: this.baselinePng.width,
-        baselineHeight: this.baselinePng.height,
-        candidateWidth: this.candidatePng.width,
-        candidateHeight: this.candidatePng.height,
+        baselineWidth: baselinePng.width,
+        baselineHeight: baselinePng.height,
+        candidateWidth: candidatePng.width,
+        candidateHeight: candidatePng.height,
       };
     }
   }

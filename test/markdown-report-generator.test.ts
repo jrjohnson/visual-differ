@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import { TestDirectory } from './helpers/test-utils.js';
+import { TestDirectory, createComparison } from './helpers/test-utils.js';
 import { generateMarkdownReport } from '../lib/markdown-report-generator.js';
 import { MAX_FILES_SHOWN } from '../lib/constants.js';
 import type { ComparisonResult } from '../lib/image-comparer.js';
@@ -36,7 +36,9 @@ describe('markdown-report-generator', () => {
 
     it('should show PASSED status when no differences', () => {
       const pair = testDir.createPngFilePair('same.png', 'red', 'red');
-      const md = generateAndRead([{ pair, hasDifference: false, diffPercentage: 0 }]);
+      const md = generateAndRead([
+        createComparison(pair, { hasDifference: false, diffPercentage: 0 }),
+      ]);
 
       expect(md).toContain('✅');
       expect(md).toContain('PASSED');
@@ -44,7 +46,9 @@ describe('markdown-report-generator', () => {
 
     it('should show FAILED status when differences exist', () => {
       const pair = testDir.createPngFilePair('changed.png', 'red', 'blue');
-      const md = generateAndRead([{ pair, hasDifference: true, diffPercentage: 25.5 }]);
+      const md = generateAndRead([
+        createComparison(pair, { hasDifference: true, diffPercentage: 25.5 }),
+      ]);
 
       expect(md).toContain('❌');
       expect(md).toContain('FAILED');
@@ -61,7 +65,7 @@ describe('markdown-report-generator', () => {
     it('should include summary counts', () => {
       const pair = testDir.createPngFilePair('changed.png', 'red', 'blue');
       const comparisonResults: ComparisonResult[] = [
-        { pair, hasDifference: true, diffPercentage: 25.5 },
+        createComparison(pair, { hasDifference: true, diffPercentage: 25.5 }),
       ];
       const baselineOnly: ScannedFile[] = [{ name: 'deleted.png', path: '/baseline/deleted.png' }];
       const candidateOnly: ScannedFile[] = [{ name: 'new.png', path: '/candidate/new.png' }];
@@ -76,7 +80,9 @@ describe('markdown-report-generator', () => {
 
     it('should list differences in a table with percentages', () => {
       const pair = testDir.createPngFilePair('changed.png', 'red', 'blue');
-      const md = generateAndRead([{ pair, hasDifference: true, diffPercentage: 15.75 }]);
+      const md = generateAndRead([
+        createComparison(pair, { hasDifference: true, diffPercentage: 15.75 }),
+      ]);
 
       expect(md).toContain('#### Differences (1)');
       expect(md).toContain('changed.png');
@@ -86,12 +92,11 @@ describe('markdown-report-generator', () => {
     it('should show dimension mismatch notes in table', () => {
       const pair = testDir.createPngFilePair('mismatched.png', 'red', 'largeRed');
       const md = generateAndRead([
-        {
-          pair,
+        createComparison(pair, {
           hasDifference: true,
           diffPercentage: 100,
           dimensionMismatch: { baseline: '10x20', candidate: '20x30' },
-        },
+        }),
       ]);
 
       expect(md).toContain('Dimension mismatch');
@@ -117,7 +122,9 @@ describe('markdown-report-generator', () => {
 
     it('should wrap file lists in a collapsible details section', () => {
       const pair = testDir.createPngFilePair('changed.png', 'red', 'blue');
-      const md = generateAndRead([{ pair, hasDifference: true, diffPercentage: 5 }]);
+      const md = generateAndRead([
+        createComparison(pair, { hasDifference: true, diffPercentage: 5 }),
+      ]);
 
       expect(md).toContain('<details>');
       expect(md).toContain('<summary>Details</summary>');
@@ -128,7 +135,9 @@ describe('markdown-report-generator', () => {
 
     it('should not list identical files', () => {
       const pair = testDir.createPngFilePair('same.png', 'red', 'red');
-      const md = generateAndRead([{ pair, hasDifference: false, diffPercentage: 0 }]);
+      const md = generateAndRead([
+        createComparison(pair, { hasDifference: false, diffPercentage: 0 }),
+      ]);
 
       expect(md).not.toContain('Identical Files');
       expect(md).toContain('**1** identical');
@@ -136,7 +145,9 @@ describe('markdown-report-generator', () => {
 
     it('should omit sub-sections that have no entries', () => {
       const pair = testDir.createPngFilePair('same.png', 'red', 'red');
-      const md = generateAndRead([{ pair, hasDifference: false, diffPercentage: 0 }]);
+      const md = generateAndRead([
+        createComparison(pair, { hasDifference: false, diffPercentage: 0 }),
+      ]);
 
       expect(md).not.toContain('#### Differences');
       expect(md).not.toContain('#### Removed');
@@ -148,7 +159,7 @@ describe('markdown-report-generator', () => {
       const results: ComparisonResult[] = [];
       for (let i = 0; i < totalFiles; i++) {
         const pair = testDir.createPngFilePair(`file-${i}.png`, 'red', 'blue');
-        results.push({ pair, hasDifference: true, diffPercentage: i + 1 });
+        results.push(createComparison(pair, { hasDifference: true, diffPercentage: i + 1 }));
       }
       const md = generateAndRead(results);
 
@@ -171,8 +182,8 @@ describe('markdown-report-generator', () => {
       const pairA = testDir.createPngFilePair('a.png', 'red', 'blue');
       const pairB = testDir.createPngFilePair('b.png', 'red', 'blue');
       const md = generateAndRead([
-        { pair: pairA, hasDifference: true, diffPercentage: 10 },
-        { pair: pairB, hasDifference: true, diffPercentage: 20 },
+        createComparison(pairA, { hasDifference: true, diffPercentage: 10 }),
+        createComparison(pairB, { hasDifference: true, diffPercentage: 20 }),
       ]);
 
       expect(md).toContain('#### Differences (2)');
