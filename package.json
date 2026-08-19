@@ -65,7 +65,7 @@
     "vitest": "^4.0.13"
   },
   "dependencies": {
-    "commander": "^14.0.2",
+    "commander": "^15.0.0",
     "fast-png": "^8.0.0",
     "handlebars": "^4.7.8",
     "pixelmatch": "^7.1.0"
