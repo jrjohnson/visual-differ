@@ -82,31 +82,49 @@ test('cycle rows on up/down keyboard input', async ({ page }) => {
 
   const firstRowCounter = page.locator('.lightbox-row-counter').first();
 
-  await expect(firstRowCounter).toHaveText('Row 1 / 4');
+  await expect(firstRowCounter).toHaveText('Row 1 / 7');
 
   await page.keyboard.press('ArrowDown');
-  await expect(firstRowCounter).toHaveText('Row 2 / 4');
+  await expect(firstRowCounter).toHaveText('Row 2 / 7');
 
   await page.keyboard.press('ArrowDown');
-  await expect(firstRowCounter).toHaveText('Row 3 / 4');
+  await expect(firstRowCounter).toHaveText('Row 3 / 7');
 
   await page.keyboard.press('ArrowDown');
-  await expect(firstRowCounter).toHaveText('Row 4 / 4');
+  await expect(firstRowCounter).toHaveText('Row 4 / 7');
 
   await page.keyboard.press('ArrowDown');
-  await expect(firstRowCounter).toHaveText('Row 1 / 4');
+  await expect(firstRowCounter).toHaveText('Row 5 / 7');
+
+  await page.keyboard.press('ArrowDown');
+  await expect(firstRowCounter).toHaveText('Row 6 / 7');
+
+  await page.keyboard.press('ArrowDown');
+  await expect(firstRowCounter).toHaveText('Row 7 / 7');
+
+  await page.keyboard.press('ArrowDown');
+  await expect(firstRowCounter).toHaveText('Row 1 / 7');
 
   await page.keyboard.press('ArrowUp');
-  await expect(firstRowCounter).toHaveText('Row 4 / 4');
+  await expect(firstRowCounter).toHaveText('Row 7 / 7');
 
   await page.keyboard.press('ArrowUp');
-  await expect(firstRowCounter).toHaveText('Row 3 / 4');
+  await expect(firstRowCounter).toHaveText('Row 6 / 7');
 
   await page.keyboard.press('ArrowUp');
-  await expect(firstRowCounter).toHaveText('Row 2 / 4');
+  await expect(firstRowCounter).toHaveText('Row 5 / 7');
 
   await page.keyboard.press('ArrowUp');
-  await expect(firstRowCounter).toHaveText('Row 1 / 4');
+  await expect(firstRowCounter).toHaveText('Row 4 / 7');
+
+  await page.keyboard.press('ArrowUp');
+  await expect(firstRowCounter).toHaveText('Row 3 / 7');
+
+  await page.keyboard.press('ArrowUp');
+  await expect(firstRowCounter).toHaveText('Row 2 / 7');
+
+  await page.keyboard.press('ArrowUp');
+  await expect(firstRowCounter).toHaveText('Row 1 / 7');
 });
 
 test('show temporary modals when wrapping top <-> bottom', async ({ page }) => {
@@ -117,13 +135,43 @@ test('show temporary modals when wrapping top <-> bottom', async ({ page }) => {
 
   const firstRowCounter = page.locator('.lightbox-row-counter').first();
 
-  await expect(firstRowCounter).toHaveText('Row 1 / 4');
+  await expect(firstRowCounter).toHaveText('Row 1 / 7');
 
   await page.keyboard.press('ArrowUp');
-  await expect(firstRowCounter).toHaveText('Row 4 / 4');
+  await expect(firstRowCounter).toHaveText('Row 7 / 7');
   await expect(page.getByRole('dialog').filter({ hasText: /^Wrapped to bottom$/ })).toBeVisible();
 
   await page.keyboard.press('ArrowDown');
-  await expect(firstRowCounter).toHaveText('Row 1 / 4');
+  await expect(firstRowCounter).toHaveText('Row 1 / 7');
   await expect(page.getByRole('dialog').filter({ hasText: /^Wrapped to top$/ })).toBeVisible();
+});
+
+test('shows dimension mismatch warning with only baseline/candidate images', async ({ page }) => {
+  await page.goto(reportUrl);
+
+  const card = page.locator('div', { has: page.locator('h3', { hasText: 'resized-banner.png' }) });
+
+  await expect(card.getByText('Dimension mismatch:')).toBeVisible();
+  await expect(card.getByText('Baseline 600x300, Candidate 600x380')).toBeVisible();
+  await expect(card.locator('.lightbox-trigger')).toHaveCount(2);
+  await expect(card.getByAltText('Baseline screenshot for resized-banner.png')).toBeVisible();
+  await expect(card.getByAltText('Candidate screenshot for resized-banner.png')).toBeVisible();
+});
+
+test('shows unsupported bit depth warning with only baseline/candidate images', async ({
+  page,
+}) => {
+  await page.goto(reportUrl);
+
+  const card = page.locator('div', {
+    has: page.locator('h3', { hasText: 'gradient-mixed-depth.png' }),
+  });
+
+  await expect(card.getByText('Unsupported bit depth:')).toBeVisible();
+  await expect(card.getByText('Baseline 8-bit, Candidate 16-bit')).toBeVisible();
+  await expect(card.locator('.lightbox-trigger')).toHaveCount(2);
+  await expect(card.getByAltText('Baseline screenshot for gradient-mixed-depth.png')).toBeVisible();
+  await expect(
+    card.getByAltText('Candidate screenshot for gradient-mixed-depth.png'),
+  ).toBeVisible();
 });
