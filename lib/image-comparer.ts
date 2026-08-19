@@ -1,20 +1,31 @@
 import pixelmatch from 'pixelmatch';
-import { PNG } from 'pngjs';
-import { writeFileSync } from 'fs';
+import { encode } from 'fast-png';
+import { copyFileSync, writeFileSync } from 'fs';
 import type { PngFilePair } from './png-file-pair.js';
 
 /**
  * Result of comparing two images
  */
 export interface ComparisonResult {
-  /** The PNG file pair that was compared */
-  pair: PngFilePair;
+  /** The name of the compared file */
+  name: string;
+  /** Output path of the copied baseline image */
+  baselinePath: string;
+  /** Output path of the copied candidate image */
+  candidatePath: string;
+  /** Output path of the generated diff image */
+  diffPath: string;
   /** Whether the images have visual differences */
   hasDifference: boolean;
   /** Percentage of different pixels (0-100) */
   diffPercentage: number;
   /** Optional dimension mismatch info if images have different dimensions */
   dimensionMismatch?: {
+    baseline: string;
+    candidate: string;
+  };
+  /** Optional note if the baseline or candidate PNG has a bit depth pixelmatch can't compare */
+  unsupportedBitDepth?: {
     baseline: string;
     candidate: string;
   };
@@ -28,12 +39,12 @@ export interface ComparisonResult {
  */
 export function compareImages(filePair: PngFilePair, threshold?: number): ComparisonResult {
   const { width, height } = filePair;
-  const diff = new PNG({ width, height });
+  const diff = new Uint8Array(width * height * 4);
 
   const numDiffPixels = pixelmatch(
-    filePair.baselineData,
-    filePair.candidateData,
-    diff.data,
+    filePair.baselineEightBitData,
+    filePair.candidateEightBitData,
+    diff,
     width,
     height,
     threshold !== undefined ? { threshold } : {},
@@ -45,13 +56,21 @@ export function compareImages(filePair: PngFilePair, threshold?: number): Compar
 
   // Only write images if there are differences
   if (hasDifference) {
-    writeFileSync(filePair.diffPath, PNG.sync.write(diff));
-    writeFileSync(filePair.baselinePath, PNG.sync.write(filePair.baselinePng));
-    writeFileSync(filePair.candidatePath, PNG.sync.write(filePair.candidatePng));
+    const diffPng = encode({
+      width,
+      height,
+      data: diff,
+    });
+    writeFileSync(filePair.diffPath, diffPng);
+    copyFileSync(filePair.baselineSourcePath, filePair.baselinePath);
+    copyFileSync(filePair.candidateSourcePath, filePair.candidatePath);
   }
 
   return {
-    pair: filePair,
+    name: filePair.name,
+    baselinePath: filePair.baselinePath,
+    candidatePath: filePair.candidatePath,
+    diffPath: filePair.diffPath,
     hasDifference,
     diffPercentage,
   };

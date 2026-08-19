@@ -65,8 +65,10 @@ function generateMarkdown(
       for (const result of shown) {
         const notes = result.dimensionMismatch
           ? `⚠️ Dimension mismatch (${result.dimensionMismatch.baseline} → ${result.dimensionMismatch.candidate})`
-          : '';
-        lines.push(`| ${result.pair.name} | ${result.diffPercentage.toFixed(2)}% | ${notes} |`);
+          : result.unsupportedBitDepth
+            ? `⚠️ Unsupported bit depth (${result.unsupportedBitDepth.baseline} → ${result.unsupportedBitDepth.candidate})`
+            : '';
+        lines.push(`| ${result.name} | ${result.diffPercentage.toFixed(2)}% | ${notes} |`);
       }
       if (withDifferences.length > MAX_FILES_SHOWN) {
         lines.push(`| … and ${withDifferences.length - MAX_FILES_SHOWN} more | | |`);

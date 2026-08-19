@@ -34,6 +34,7 @@ The exit codes make this tool suitable for CI/CD pipelines. A non-zero exit code
 
 - Node.js >= 24.0.0
 - PNG images only
+- 8-bit-per-channel PNGs for pixel comparison; 16-bit PNGs are detected and flagged as an unsupported bit depth in the report instead of being pixel-compared
 
 ## Contributing
 

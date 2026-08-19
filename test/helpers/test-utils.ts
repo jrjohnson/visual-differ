@@ -1,6 +1,7 @@
 import { mkdirSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { PngFilePair } from '../../lib/png-file-pair.js';
+import type { ComparisonResult } from '../../lib/image-comparer.js';
 
 /**
  * PNG test fixtures - minimal valid PNG images
@@ -24,10 +25,16 @@ const LARGE_RED_PNG = Buffer.from(
   'base64',
 );
 
+/** Valid 1x1 red PNG encoded at 16 bits per channel, used to test unsupported bit depth handling */
+const RED_16_BIT_PNG = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABEAYAAABPhRjKAAAAEElEQVR4XmP4/58BCP7/BwAR9wP9iL6TkwAAAABJRU5ErkJggg==',
+  'base64',
+);
+
 /**
  * Available PNG fixtures for testing
  */
-export type PngFixture = 'red' | 'blue' | 'largeRed';
+export type PngFixture = 'red' | 'blue' | 'largeRed' | 'red16Bit';
 
 /**
  * Gets the PNG buffer for a given fixture
@@ -40,6 +47,8 @@ function getPngBuffer(fixture: PngFixture): Buffer {
       return BLUE_PNG;
     case 'largeRed':
       return LARGE_RED_PNG;
+    case 'red16Bit':
+      return RED_16_BIT_PNG;
   }
 }
 
@@ -128,4 +137,29 @@ export class TestDirectory {
   writeCandidate(name: string, fixture: PngFixture): void {
     writeFileSync(join(this.candidateDir, name), getPngBuffer(fixture));
   }
+}
+
+// The outcome of a comparison a test wants to simulate, independent of which files were compared
+export interface ComparisonOutcome {
+  hasDifference: boolean;
+  diffPercentage: number;
+  dimensionMismatch?: {
+    baseline: string;
+    candidate: string;
+  };
+  unsupportedBitDepth?: {
+    baseline: string;
+    candidate: string;
+  };
+}
+
+// Builds a ComparisonResult from a loaded PngFilePair plus the outcome fields under test
+export function createComparison(pair: PngFilePair, outcome: ComparisonOutcome): ComparisonResult {
+  return {
+    name: pair.name,
+    baselinePath: pair.baselinePath,
+    candidatePath: pair.candidatePath,
+    diffPath: pair.diffPath,
+    ...outcome,
+  };
 }

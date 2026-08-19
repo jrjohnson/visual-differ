@@ -20,9 +20,10 @@ describe('PngFilePair', () => {
     expect(pair.name).toBe('image.png');
     expect(pair.width).toBe(1);
     expect(pair.height).toBe(1);
-    expect(pair.baselineData).toBeInstanceOf(Buffer);
-    expect(pair.candidateData).toBeInstanceOf(Buffer);
+    expect(pair.baselinePng.data).toBeInstanceOf(Uint8Array);
+    expect(pair.candidatePng.data).toBeInstanceOf(Uint8Array);
     expect(pair.hasDimensionMismatch).toBe(false);
+    expect(pair.hasUnsupportedBitDepth).toBe(false);
   });
 
   it('should detect dimension mismatch without throwing', () => {
@@ -35,6 +36,39 @@ describe('PngFilePair', () => {
       candidateWidth: 2,
       candidateHeight: 2,
     });
+  });
+
+  it('should detect unsupported bit depth without throwing', () => {
+    const pair = testDir.createPngFilePair('test.png', 'red16Bit', 'red');
+
+    expect(pair.hasUnsupportedBitDepth).toBe(true);
+    expect(pair.unsupportedBitDepth).toEqual({ baselineDepth: 16, candidateDepth: 8 });
+  });
+
+  it('should not flag unsupported bit depth for two 8-bit images', () => {
+    const pair = testDir.createPngFilePair('test.png', 'red', 'blue');
+
+    expect(pair.hasUnsupportedBitDepth).toBe(false);
+    expect(pair.unsupportedBitDepth).toBeUndefined();
+  });
+
+  it('should return 8-bit sample data when both images are 8-bit', () => {
+    const pair = testDir.createPngFilePair('test.png', 'red', 'blue');
+
+    expect(pair.baselineEightBitData).toBeInstanceOf(Uint8Array);
+    expect(pair.candidateEightBitData).toBeInstanceOf(Uint8Array);
+  });
+
+  it('should throw when reading 8-bit data from a 16-bit baseline', () => {
+    const pair = testDir.createPngFilePair('test.png', 'red16Bit', 'red');
+
+    expect(() => pair.baselineEightBitData).toThrow(/16-bit/);
+  });
+
+  it('should throw when reading 8-bit data from a 16-bit candidate', () => {
+    const pair = testDir.createPngFilePair('test.png', 'red', 'red16Bit');
+
+    expect(() => pair.candidateEightBitData).toThrow(/16-bit/);
   });
 
   it('should throw error if baseline file cannot be read', () => {

@@ -1,6 +1,5 @@
-import { mkdirSync, writeFileSync } from 'fs';
+import { mkdirSync, copyFileSync } from 'fs';
 import { join } from 'path';
-import { PNG } from 'pngjs';
 import { scanAndMatchFiles } from './file-scanner.js';
 import { PngFilePair } from './png-file-pair.js';
 import { compareImages } from './image-comparer.js';
@@ -60,13 +59,16 @@ export function compareDirectories(
       imagesDir,
     );
 
-    // Handle dimension mismatch - write PNGs and treat as 100% different
+    // Handle dimension mismatch - copy source images and treat as 100% different
     if (pngPair.hasDimensionMismatch) {
-      writeFileSync(pngPair.baselinePath, PNG.sync.write(pngPair.baselinePng));
-      writeFileSync(pngPair.candidatePath, PNG.sync.write(pngPair.candidatePng));
+      copyFileSync(pngPair.baselineSourcePath, pngPair.baselinePath);
+      copyFileSync(pngPair.candidateSourcePath, pngPair.candidatePath);
 
       return {
-        pair: pngPair,
+        name: pngPair.name,
+        baselinePath: pngPair.baselinePath,
+        candidatePath: pngPair.candidatePath,
+        diffPath: pngPair.diffPath,
         hasDifference: true,
         diffPercentage: 100,
         dimensionMismatch: {
@@ -76,7 +78,27 @@ export function compareDirectories(
       };
     }
 
-    // No dimension mismatch - do normal comparison
+    // Handle unsupported bit depth - pixelmatch can't compare 16-bit PNGs,
+    // so copy source images and treat as 100% different
+    if (pngPair.hasUnsupportedBitDepth) {
+      copyFileSync(pngPair.baselineSourcePath, pngPair.baselinePath);
+      copyFileSync(pngPair.candidateSourcePath, pngPair.candidatePath);
+
+      return {
+        name: pngPair.name,
+        baselinePath: pngPair.baselinePath,
+        candidatePath: pngPair.candidatePath,
+        diffPath: pngPair.diffPath,
+        hasDifference: true,
+        diffPercentage: 100,
+        unsupportedBitDepth: {
+          baseline: `${pngPair.unsupportedBitDepth!.baselineDepth}-bit`,
+          candidate: `${pngPair.unsupportedBitDepth!.candidateDepth}-bit`,
+        },
+      };
+    }
+
+    // No format issues - do normal comparison
     return compareImages(pngPair, threshold);
   });
 

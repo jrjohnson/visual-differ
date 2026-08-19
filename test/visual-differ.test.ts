@@ -190,6 +190,41 @@ describe('visual-differ', () => {
       expect(html).toContain('2x2');
     });
 
+    it('should handle unsupported bit depth gracefully', () => {
+      testDir.writeBaseline('unsupported.png', 'red16Bit');
+      testDir.writeCandidate('unsupported.png', 'red');
+      testDir.writeBaseline('normal.png', 'red');
+      testDir.writeCandidate('normal.png', 'red');
+
+      const result: CompareResult = compareDirectories(
+        testDir.baselineDir,
+        testDir.candidateDir,
+        testDir.outputDir,
+      );
+
+      expect(result.exitCode).toBe(1);
+      expect(result.totalImages).toBe(2);
+      expect(result.withDifferences).toBe(1); // unsupported bit depth counted as different
+      expect(result.withoutDifferences).toBe(1); // normal is identical
+
+      // Baseline/candidate are copied for inspection, but no diff image can be generated
+      expect(existsSync(join(testDir.imagesDir, 'unsupported-baseline.png'))).toBe(true);
+      expect(existsSync(join(testDir.imagesDir, 'unsupported-candidate.png'))).toBe(true);
+      expect(existsSync(join(testDir.imagesDir, 'unsupported-diff.png'))).toBe(false);
+    });
+
+    it('should show unsupported bit depth info in report', () => {
+      testDir.writeBaseline('unsupported.png', 'red16Bit');
+      testDir.writeCandidate('unsupported.png', 'red');
+
+      compareDirectories(testDir.baselineDir, testDir.candidateDir, testDir.outputDir);
+
+      const html = readFileSync(join(testDir.outputDir, 'index.html'), 'utf-8');
+      expect(html).toContain('Unsupported bit depth');
+      expect(html).toContain('16-bit');
+      expect(html).toContain('8-bit');
+    });
+
     it('should accept custom threshold parameter', () => {
       testDir.writeBaseline('image1.png', 'red');
       testDir.writeCandidate('image1.png', 'blue');
