@@ -20,8 +20,8 @@ describe('PngFilePair', () => {
     expect(pair.name).toBe('image.png');
     expect(pair.width).toBe(1);
     expect(pair.height).toBe(1);
-    expect(pair.baselineData).toBeInstanceOf(Buffer);
-    expect(pair.candidateData).toBeInstanceOf(Buffer);
+    expect(pair.baselinePng.data).toBeInstanceOf(Uint8Array);
+    expect(pair.candidatePng.data).toBeInstanceOf(Uint8Array);
     expect(pair.hasDimensionMismatch).toBe(false);
   });
 

@@ -1,5 +1,5 @@
 import pixelmatch from 'pixelmatch';
-import { PNG } from 'pngjs';
+import { encode } from 'fast-png';
 import { copyFileSync, writeFileSync } from 'fs';
 import type { PngFilePair } from './png-file-pair.js';
 
@@ -34,12 +34,12 @@ export interface ComparisonResult {
  */
 export function compareImages(filePair: PngFilePair, threshold?: number): ComparisonResult {
   const { width, height } = filePair;
-  const diff = new PNG({ width, height });
+  const diff = new Uint8Array(width * height * 4);
 
   const numDiffPixels = pixelmatch(
-    filePair.baselineData,
-    filePair.candidateData,
-    diff.data,
+    filePair.baselinePng.data,
+    filePair.candidatePng.data,
+    diff,
     width,
     height,
     threshold !== undefined ? { threshold } : {},
@@ -51,7 +51,12 @@ export function compareImages(filePair: PngFilePair, threshold?: number): Compar
 
   // Only write images if there are differences
   if (hasDifference) {
-    writeFileSync(filePair.diffPath, PNG.sync.write(diff));
+    const diffPng = encode({
+      width,
+      height,
+      data: diff,
+    });
+    writeFileSync(filePair.diffPath, diffPng);
     copyFileSync(filePair.baselineSourcePath, filePair.baselinePath);
     copyFileSync(filePair.candidateSourcePath, filePair.candidatePath);
   }
