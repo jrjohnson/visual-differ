@@ -9,11 +9,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  baseline:
-    name: Baseline
+  baseline-info:
+    name: Baseline Info
     runs-on: ubuntu-latest
     outputs:
       ref: ${{ steps.ref.outputs.ref }}
+      playwright-version: ${{ steps.playwright.outputs.version }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -22,12 +23,31 @@ jobs:
         run: |
           echo "$(git rev-parse HEAD)"
           echo "ref=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - uses: pnpm/action-setup@v6
+      - name: Read Playwright Version
+        id: playwright
+        run: |
+          version=$(pnpm ls --json --lockfile-only --dev @playwright/test | jq -r '.[0].devDependencies["@playwright/test"].version')
+          echo "@playwright/test version: ${version}"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+  baseline:
+    name: Baseline
+    needs: baseline-info
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v${{ needs.baseline-info.outputs.playwright-version }}-noble
+      options: --user 1001
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.baseline-info.outputs.ref }}
       - name: Cache Screenshots
         id: screenshot-cache
         uses: actions/cache@v6
         with:
           path: build
-          key: screenshots-${{ steps.ref.outputs.ref }}
+          key: screenshots-${{ needs.baseline-info.outputs.ref }}
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
@@ -35,9 +55,7 @@ jobs:
           cache: pnpm
       - name: Install Dependencies
         if: steps.screenshot-cache.outputs.cache-hit != 'true'
-        run: |
-          pnpm install
-          pnpm exec playwright install --with-deps
+        run: pnpm install
       - name: Capture Screenshots
         if: steps.screenshot-cache.outputs.cache-hit != 'true'
         run: pnpm run test:screenshots
@@ -46,23 +64,43 @@ jobs:
           name: baseline
           path: build
 
-  candidate:
-    name: Candidate
+  candidate-info:
+    name: Candidate Info
     runs-on: ubuntu-latest
     outputs:
       ref: ${{ steps.ref.outputs.ref }}
+      playwright-version: ${{ steps.playwright.outputs.version }}
     steps:
       - uses: actions/checkout@v7
       - id: ref
         run: |
           echo "$(git rev-parse HEAD)"
           echo "ref=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - uses: pnpm/action-setup@v6
+      - name: Read Playwright Version
+        id: playwright
+        run: |
+          version=$(pnpm ls --json --lockfile-only --dev @playwright/test | jq -r '.[0].devDependencies["@playwright/test"].version')
+          echo "@playwright/test version: ${version}"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+  candidate:
+    name: Candidate
+    needs: candidate-info
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v${{ needs.candidate-info.outputs.playwright-version }}-noble
+      options: --user 1001
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.candidate-info.outputs.ref }}
       - name: Cache Screenshots
         id: screenshot-cache
         uses: actions/cache@v6
         with:
           path: build
-          key: screenshots-${{ steps.ref.outputs.ref }}-${{ matrix.name }}
+          key: screenshots-${{ needs.candidate-info.outputs.ref }}-${{ matrix.name }}
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
@@ -70,9 +108,7 @@ jobs:
           cache: pnpm
       - name: Install Dependencies
         if: steps.screenshot-cache.outputs.cache-hit != 'true'
-        run: |
-          pnpm install
-          pnpm exec playwright install --with-deps
+        run: pnpm install
       - name: Capture Screenshots
         if: steps.screenshot-cache.outputs.cache-hit != 'true'
         run: pnpm test:screenshots
@@ -83,12 +119,12 @@ jobs:
 
   compare:
     name: Visual Diff
-    needs: [baseline, candidate]
+    needs: [baseline-info, baseline, candidate-info, candidate]
     runs-on: ubuntu-latest
     env:
       OUTPUT_DIR: visual-diff-${{ github.event.pull_request.number }}
-      BASELINE_REF: ${{needs.baseline.outputs.ref}}
-      CANDIDATE_REF: ${{needs.candidate.outputs.ref}}
+      BASELINE_REF: ${{needs.baseline-info.outputs.ref}}
+      CANDIDATE_REF: ${{needs.candidate-info.outputs.ref}}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
