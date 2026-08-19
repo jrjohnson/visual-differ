@@ -104,6 +104,21 @@ describe('markdown-report-generator', () => {
       expect(md).toContain('20x30');
     });
 
+    it('should show unsupported bit depth notes in table', () => {
+      const pair = testDir.createPngFilePair('unsupported.png', 'red16Bit', 'red');
+      const md = generateAndRead([
+        createComparison(pair, {
+          hasDifference: true,
+          diffPercentage: 100,
+          unsupportedBitDepth: { baseline: '16-bit', candidate: '8-bit' },
+        }),
+      ]);
+
+      expect(md).toContain('Unsupported bit depth');
+      expect(md).toContain('16-bit');
+      expect(md).toContain('8-bit');
+    });
+
     it('should list removed files', () => {
       const baselineOnly: ScannedFile[] = [{ name: 'removed.png', path: '/baseline/removed.png' }];
       const md = generateAndRead([], baselineOnly);

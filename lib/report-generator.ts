@@ -66,6 +66,7 @@ function generateHTML(
     withDifferences: withDifferences.map((result) => ({
       name: result.name,
       dimensionMismatch: result.dimensionMismatch,
+      unsupportedBitDepth: result.unsupportedBitDepth,
       diffPercentage: result.diffPercentage.toFixed(2),
       baselineImage: `${IMAGES_DIR}/${basename(result.baselinePath)}`,
       diffImage: `${IMAGES_DIR}/${basename(result.diffPath)}`,

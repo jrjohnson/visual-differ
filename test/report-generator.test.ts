@@ -90,6 +90,30 @@ describe('report-generator', () => {
       expect(html).toContain('images/mismatched-candidate.png');
     });
 
+    it('should handle unsupported bit depth display', () => {
+      const pair = testDir.createPngFilePair('unsupported.png', 'red16Bit', 'red');
+      const comparisonResults: ComparisonResult[] = [
+        createComparison(pair, {
+          hasDifference: true,
+          diffPercentage: 100,
+          unsupportedBitDepth: { baseline: '16-bit', candidate: '8-bit' },
+        }),
+      ];
+      const baselineOnly: ScannedFile[] = [];
+      const candidateOnly: ScannedFile[] = [];
+
+      generateReport(comparisonResults, baselineOnly, candidateOnly, testDir.outputDir);
+
+      const html = readFileSync(join(testDir.outputDir, 'index.html'), 'utf-8');
+
+      expect(html).toContain('Unsupported bit depth');
+      expect(html).toContain('16-bit');
+      expect(html).toContain('8-bit');
+      expect(html).toContain('images/unsupported-baseline.png');
+      expect(html).not.toContain('images/unsupported-diff.png');
+      expect(html).toContain('images/unsupported-candidate.png');
+    });
+
     it('should show status indicator', () => {
       const pair = testDir.createPngFilePair('changed.png', 'red', 'blue');
       const comparisonResults: ComparisonResult[] = [
@@ -185,6 +209,20 @@ describe('report-generator', () => {
           hasDifference: true,
           diffPercentage: 100,
           dimensionMismatch: { baseline: '1x1', candidate: '2x2' },
+        }),
+      ]);
+
+      const triggerCount = (html.match(/class="lightbox-trigger"/g) ?? []).length;
+      expect(triggerCount).toBe(2);
+    });
+
+    it('should render two triggers for unsupported bit depth groups', () => {
+      const pair = testDir.createPngFilePair('a.png', 'red16Bit', 'red');
+      const html = generateAndRead([
+        createComparison(pair, {
+          hasDifference: true,
+          diffPercentage: 100,
+          unsupportedBitDepth: { baseline: '16-bit', candidate: '8-bit' },
         }),
       ]);
 

@@ -71,5 +71,13 @@ describe('image-comparer', () => {
       // Images should not be written when no differences detected
       expect(existsSync(result.diffPath)).toBe(false);
     });
+
+    it('should throw a clear error when given an unsupported 16-bit PNG', () => {
+      // Callers should check PngFilePair.hasUnsupportedBitDepth before calling
+      // compareImages; this documents what happens if that guard is skipped.
+      const pair = testDir.createPngFilePair('test.png', 'red16Bit', 'red');
+
+      expect(() => compareImages(pair)).toThrow(/16-bit/);
+    });
   });
 });

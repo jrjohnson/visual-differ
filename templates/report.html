@@ -258,6 +258,11 @@
           <strong><span aria-label="Warning">⚠️</span> Dimension mismatch:</strong> Baseline
           {{dimensionMismatch.baseline}}, Candidate {{dimensionMismatch.candidate}}
         </p>
+        {{else if unsupportedBitDepth}}
+        <p>
+          <strong><span aria-label="Warning">⚠️</span> Unsupported bit depth:</strong> Baseline
+          {{unsupportedBitDepth.baseline}}, Candidate {{unsupportedBitDepth.candidate}}
+        </p>
         {{else}}
         <p><strong>Difference:</strong> {{diffPercentage}}%</p>
         {{/if}}
@@ -266,12 +271,14 @@
             <img src="{{baselineImage}}" alt="Baseline screenshot for {{name}}" />
           </button>
           {{#unless dimensionMismatch}}
+          {{#unless unsupportedBitDepth}}
           <button type="button" class="lightbox-trigger">
             <img
               src="{{diffImage}}"
               alt="Visual difference highlighting changed pixels in {{name}}"
             />
           </button>
+          {{/unless}}
           {{/unless}}
           <button type="button" class="lightbox-trigger">
             <img src="{{candidateImage}}" alt="Candidate screenshot for {{name}}" />

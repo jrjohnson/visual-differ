@@ -24,6 +24,11 @@ export interface ComparisonResult {
     baseline: string;
     candidate: string;
   };
+  /** Optional note if the baseline or candidate PNG has a bit depth pixelmatch can't compare */
+  unsupportedBitDepth?: {
+    baseline: string;
+    candidate: string;
+  };
 }
 
 /**
@@ -37,8 +42,8 @@ export function compareImages(filePair: PngFilePair, threshold?: number): Compar
   const diff = new Uint8Array(width * height * 4);
 
   const numDiffPixels = pixelmatch(
-    filePair.baselinePng.data,
-    filePair.candidatePng.data,
+    filePair.baselineEightBitData,
+    filePair.candidateEightBitData,
     diff,
     width,
     height,
