@@ -473,7 +473,7 @@
               event.preventDefault();
               const upRow = wrapRow(row - 1);
               show(upRow, Math.min(col, grid[upRow].length - 1));
-              if (upRow == grid[upRow].length) {
+              if (upRow === grid.length - 1) {
                 if (window.tempModal) {
                   window.tempModal._destroyModal();
                 }
