@@ -100,7 +100,7 @@ jobs:
         uses: actions/cache@v6
         with:
           path: build
-          key: screenshots-${{ needs.candidate-info.outputs.ref }}-${{ matrix.name }}
+          key: screenshots-${{ needs.candidate-info.outputs.ref }}
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
@@ -142,6 +142,13 @@ jobs:
       - uses: actions/download-artifact@v8
         if: steps.comparison-cache.outputs.cache-hit != 'true'
       - run: ls -lh baseline candidate 2>/dev/null || true
+      - uses: actions/upload-artifact@v7
+        if: steps.comparison-cache.outputs.cache-hit != 'true'
+        with:
+          name: combined-screenshots
+          path: |
+            baseline
+            candidate
       - run: |
           mkdir -p ./results
           echo ${{ github.event.pull_request.number }} > ./results/pr_number
