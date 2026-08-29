@@ -35,8 +35,11 @@ function generateHTML(
   baselineOnly: ScannedFile[],
   candidateOnly: ScannedFile[],
 ): string {
-  // Load and compile template
+  // Load report source files
   const templateSource = readFileSync(join(TEMPLATES_DIR, 'report.html'), 'utf-8');
+  const styles = readFileSync(join(TEMPLATES_DIR, 'report.css'), 'utf-8');
+  const script = readFileSync(join(TEMPLATES_DIR, 'report.js'), 'utf-8');
+
   const template = Handlebars.compile(templateSource);
 
   // Separate results into categories
@@ -63,6 +66,7 @@ function generateHTML(
     removedCount,
     addedCount,
     identicalCount: withoutDifferences.length,
+
     withDifferences: withDifferences.map((result) => ({
       name: result.name,
       dimensionMismatch: result.dimensionMismatch,
@@ -72,16 +76,27 @@ function generateHTML(
       diffImage: `${IMAGES_DIR}/${basename(result.diffPath)}`,
       candidateImage: `${IMAGES_DIR}/${basename(result.candidatePath)}`,
     })),
+
     withoutDifferences: withoutDifferences.map((result) => ({
       name: result.name,
     })),
-    baselineOnly: baselineOnly.map((file) => ({ name: file.name })),
+
+    baselineOnly: baselineOnly.map((file) => ({
+      name: file.name,
+    })),
+
     candidateOnly: candidateOnly.map((file) => ({
       name: file.name,
       image: `${IMAGES_DIR}/${NEW_IMAGES_DIR}/${file.name}`,
     })),
+
     hasRemovedOrAdded: baselineOnly.length > 0 || candidateOnly.length > 0,
   };
 
-  return template(data);
+  // Render Handlebars first, then inline the CSS and JavaScript.
+  // Keeping these outside the Handlebars data prevents Handlebars from
+  // interpreting anything in the CSS or JavaScript as template expressions.
+  return template(data)
+    .replace('/* __REPORT_STYLES__ */', () => styles)
+    .replace('/* __REPORT_SCRIPT__ */', () => script);
 }

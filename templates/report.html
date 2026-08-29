@@ -5,240 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Visual Diff Report</title>
     <style>
-      .diff-images {
-        display: flex;
-        gap: 1rem;
-        margin: 1rem 0;
-      }
-      .diff-images img {
-        max-width: 30vw;
-        height: auto;
-      }
-      details {
-        margin-bottom: 1em;
-      }
-      summary {
-        cursor: pointer;
-        font-size: 1.17em;
-        font-weight: bold;
-      }
-
-      .lightbox-trigger {
-        all: unset;
-        cursor: zoom-in;
-        border-radius: 4px;
-        outline: 2px solid transparent;
-        outline-offset: 2px;
-        transition: outline-color 0.15s;
-
-        &:hover,
-        &:focus-visible {
-          outline-color: Highlight;
-        }
-
-        & img {
-          display: block;
-          border-radius: inherit;
-        }
-      }
-
-      #lightbox {
-        z-index: 1;
-
-        &[open] {
-          position: fixed;
-          inset: 0;
-          width: 100dvw;
-          height: 100dvh;
-          max-width: none;
-          max-height: none;
-          margin: 0;
-          padding: 0;
-          border: none;
-          background: none;
-          display: grid;
-          place-items: center;
-          overflow: auto;
-          animation: lightbox-fade-in 0.15s ease-out;
-        }
-
-        &::backdrop {
-          background: rgb(0 0 0 / 0.92);
-          animation: lightbox-fade-in 0.15s ease-out;
-        }
-      }
-
-      @keyframes lightbox-fade-in {
-        from {
-          opacity: 0;
-        }
-      }
-
-      .lightbox-panel {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.75rem;
-      }
-
-      .lightbox-image-filename {
-        color: rgb(255 255 255 / 0.9);
-        font:
-          bold 1rem/1.4 system-ui,
-          sans-serif;
-      }
-
-      .lightbox-image {
-        max-height: calc(100dvh - 4rem);
-        max-width: 100dvw;
-        object-fit: contain;
-        border-radius: 4px;
-      }
-
-      .lightbox-caption {
-        color: rgb(255 255 255 / 0.9);
-        font:
-          0.875rem/1.4 system-ui,
-          sans-serif;
-        text-align: center;
-        margin: 0;
-      }
-
-      .lightbox-counters {
-        display: flex;
-        gap: 1em;
-      }
-
-      .lightbox-image-counter,
-      .lightbox-row-counter {
-        color: rgb(255 255 255 / 0.5);
-        font:
-          0.75rem/1 system-ui,
-          sans-serif;
-      }
-
-      .lightbox-link {
-        color: rgb(255 255 255 / 0.7);
-        font:
-          0.75rem/1 system-ui,
-          sans-serif;
-        text-decoration: none;
-        padding: 0.25rem 0.75rem;
-        border: 1px solid rgb(255 255 255 / 0.3);
-        border-radius: 4px;
-        transition:
-          color 0.15s,
-          border-color 0.15s;
-
-        &:hover,
-        &:focus-visible {
-          color: white;
-          border-color: white;
-        }
-      }
-
-      .lightbox-btn {
-        appearance: none;
-        border: none;
-        background: rgb(255 255 255 / 0.1);
-        color: white;
-        cursor: pointer;
-        border-radius: 50%;
-        display: grid;
-        place-items: center;
-        transition: background-color 0.15s;
-
-        &:hover {
-          background: rgb(255 255 255 / 0.25);
-        }
-
-        &:focus-visible {
-          outline: 2px solid white;
-          outline-offset: 2px;
-        }
-      }
-
-      .lightbox-close {
-        position: fixed;
-        top: 1rem;
-        right: 1rem;
-        width: 2.5rem;
-        height: 2.5rem;
-      }
-
-      .lightbox-nav {
-        position: fixed;
-        top: 50%;
-        translate: 0 -50%;
-        width: 3rem;
-        height: 3rem;
-
-        &[hidden] {
-          display: none;
-        }
-      }
-
-      .lightbox-prev {
-        left: 1rem;
-      }
-      .lightbox-next {
-        right: 1rem;
-      }
-
-      .lightbox-icon {
-        width: 1.25rem;
-        height: 1.25rem;
-        fill: none;
-        stroke: currentColor;
-        stroke-width: 2;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-      }
-
-      #modal-window {
-        background-color: #000;
-        border: 2px solid #fff;
-        border-radius: 8px;
-        color: #fff;
-        display: flex;
-        justify-self: center;
-        margin: 0 auto;
-        max-height: 95%;
-        max-width: 500px;
-        opacity: 0;
-        padding: 0;
-        position: fixed;
-        top: 20px;
-        width: fit-content;
-
-        &.load {
-          opacity: 1;
-          transition: opacity 200ms ease-in-out;
-        }
-
-        &.remove {
-          opacity: 0;
-          transition: opacity 500ms ease-in-out;
-        }
-
-        .modal-text {
-          display: flex;
-          flex-direction: column;
-          gap: 0.5em;
-          justify-content: center;
-          line-height: 1.1;
-          margin: 0;
-          overflow-y: auto;
-          padding: 10px 5px;
-          width: 100%;
-        }
-      }
+      /* __REPORT_STYLES__ */
     </style>
   </head>
   <body>
     <main>
       <h1>Visual Diff Report</h1>
       <p><strong>Status:</strong> <span aria-hidden="true">{{statusEmoji}}</span> {{statusText}}</p>
+
       <h2>Summary</h2>
       <ul>
         <li><strong>Total Images:</strong> {{totalImages}}</li>
@@ -250,26 +24,30 @@
 
       {{#if withDifferences.length}}
       <h2>Images with Differences ({{withDifferences.length}})</h2>
+
       {{#each withDifferences}}
       <div>
         <h3>{{name}}</h3>
+
         {{#if dimensionMismatch}}
         <p>
-          <strong><span aria-label="Warning">⚠️</span> Dimension mismatch:</strong> Baseline
-          {{dimensionMismatch.baseline}}, Candidate {{dimensionMismatch.candidate}}
+          <strong><span aria-label="Warning">⚠️</span> Dimension mismatch:</strong>
+          Baseline {{dimensionMismatch.baseline}}, Candidate {{dimensionMismatch.candidate}}
         </p>
         {{else if unsupportedBitDepth}}
         <p>
-          <strong><span aria-label="Warning">⚠️</span> Unsupported bit depth:</strong> Baseline
-          {{unsupportedBitDepth.baseline}}, Candidate {{unsupportedBitDepth.candidate}}
+          <strong><span aria-label="Warning">⚠️</span> Unsupported bit depth:</strong>
+          Baseline {{unsupportedBitDepth.baseline}}, Candidate {{unsupportedBitDepth.candidate}}
         </p>
         {{else}}
         <p><strong>Difference:</strong> {{diffPercentage}}%</p>
         {{/if}}
+
         <div class="diff-images" data-lightbox-group="diff">
           <button type="button" class="lightbox-trigger">
             <img src="{{baselineImage}}" alt="Baseline screenshot for {{name}}" />
           </button>
+
           {{#unless dimensionMismatch}} {{#unless unsupportedBitDepth}}
           <button type="button" class="lightbox-trigger">
             <img
@@ -278,6 +56,7 @@
             />
           </button>
           {{/unless}} {{/unless}}
+
           <button type="button" class="lightbox-trigger">
             <img src="{{candidateImage}}" alt="Candidate screenshot for {{name}}" />
           </button>
@@ -294,6 +73,7 @@
       </details>
       {{/if}} {{#if candidateOnly.length}}
       <h2>Added in Candidate ({{candidateOnly.length}})</h2>
+
       {{#each candidateOnly}}
       <div>
         <h3>{{name}}</h3>
@@ -325,16 +105,23 @@
           <line x1="6" y1="6" x2="18" y2="18" />
         </svg>
       </button>
+
       <button
         type="button"
         class="lightbox-btn lightbox-nav lightbox-prev"
         aria-label="Previous image"
       >
-        <svg class="lightbox-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6" /></svg>
+        <svg class="lightbox-icon" viewBox="0 0 24 24">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
       </button>
+
       <button type="button" class="lightbox-btn lightbox-nav lightbox-next" aria-label="Next image">
-        <svg class="lightbox-icon" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18" /></svg>
+        <svg class="lightbox-icon" viewBox="0 0 24 24">
+          <polyline points="9 6 15 12 9 18" />
+        </svg>
       </button>
+
       <div class="lightbox-panel">
         <span class="lightbox-image-filename"></span>
         <img class="lightbox-image" src="" alt="" />
@@ -348,168 +135,7 @@
     </dialog>
 
     <script>
-      class Modal {
-        constructor(modalText) {
-          this.modalDelay = 1500;
-          this.modalText = modalText;
-          this.parent = document.getElementById('lightbox');
-
-          this.modal = null;
-          this._createModal();
-
-          let modal = this;
-          setTimeout(
-            function (modal) {
-              modal._destroyModal(false);
-            }.bind(this, modal),
-            this.modalDelay,
-          );
-        }
-
-        _createModal() {
-          this.modal = document.createElement('dialog');
-          this.modal.id = 'modal-window';
-
-          const text = document.createElement('div');
-          text.classList.add('modal-text');
-          text.innerHTML = this.modalText;
-          this.modal.appendChild(text);
-
-          this.parent.appendChild(this.modal);
-
-          setTimeout(() => this.modal.classList.add('load'), 1);
-        }
-
-        _destroyModal(immediate = false) {
-          if (this.modal) {
-            const modal = document.getElementById('modal-window');
-
-            if (this.parent.contains(modal)) {
-              // remove modal immediately
-              if (immediate) {
-                this.parent.removeChild(modal);
-                delete this;
-              }
-              // fade out modal gently
-              else {
-                this.modal.classList.remove('load');
-                this.modal.classList.add('remove');
-
-                this.modal.addEventListener('transitionend', () => {
-                  this.parent.removeChild(modal);
-                  delete this;
-                });
-              }
-            }
-          }
-        }
-      }
-
-      (() => {
-        const lightbox = document.querySelector('#lightbox');
-        const filename = lightbox.querySelector('.lightbox-image-filename');
-        const image = lightbox.querySelector('.lightbox-image');
-        const caption = lightbox.querySelector('.lightbox-caption');
-        const imageCounter = lightbox.querySelector('.lightbox-image-counter');
-        const rowCounter = lightbox.querySelector('.lightbox-row-counter');
-        const link = lightbox.querySelector('.lightbox-link');
-        const prevBtn = lightbox.querySelector('.lightbox-prev');
-        const nextBtn = lightbox.querySelector('.lightbox-next');
-
-        // 2D grid: each row is a group of related images, columns are images within it.
-        // Diff rows come first and are the only rows that participate in row counting and
-        // Up/Down cycling; added-image rows can still be opened but don't have peers to cycle through.
-        const toGroups = (groups) =>
-          [...document.querySelectorAll(groups)].map((group) => [
-            ...group.querySelectorAll('.lightbox-trigger'),
-          ]);
-        const diffGroups = toGroups('.diff-images[data-lightbox-group="diff"]');
-        const addedGroups = toGroups('.diff-images[data-lightbox-group="added"]');
-        const grid = [...diffGroups, ...addedGroups];
-        const diffRowCount = diffGroups.length;
-
-        if (grid.length === 0) return;
-
-        let row = 0;
-        let col = 0;
-
-        const wrapCol = (r, c) => ((c % grid[r].length) + grid[r].length) % grid[r].length;
-        const wrapRow = (r) => ((r % diffRowCount) + diffRowCount) % diffRowCount;
-        const isDiffRow = (r) => r < diffRowCount;
-
-        const show = (r, c) => {
-          row = r;
-          col = c;
-          const img = grid[row][col].querySelector('img');
-          filename.textContent = img.alt.split(' ').reverse()[0];
-          image.src = img.src;
-          image.alt = img.alt;
-          caption.textContent = img.alt;
-          imageCounter.textContent = `Image ${col + 1}\u2009/\u2009${grid[row].length}`;
-          rowCounter.textContent = isDiffRow(row)
-            ? `Row ${row + 1}\u2009/\u2009${diffRowCount}`
-            : '';
-          link.href = img.src;
-        };
-
-        const open = (r, c) => {
-          show(r, c);
-          lightbox.showModal();
-        };
-
-        for (const [r, group] of grid.entries()) {
-          for (const [c, trigger] of group.entries()) {
-            trigger.addEventListener('click', () => open(r, c));
-          }
-        }
-
-        prevBtn.addEventListener('click', () => show(row, wrapCol(row, col - 1)));
-        nextBtn.addEventListener('click', () => show(row, wrapCol(row, col + 1)));
-        lightbox.querySelector('.lightbox-close').addEventListener('click', () => lightbox.close());
-
-        lightbox.addEventListener('keydown', (event) => {
-          switch (event.key) {
-            case 'ArrowLeft':
-              event.preventDefault();
-              show(row, wrapCol(row, col - 1));
-              break;
-            case 'ArrowRight':
-              event.preventDefault();
-              show(row, wrapCol(row, col + 1));
-              break;
-            case 'ArrowUp': {
-              if (!isDiffRow(row)) break;
-              event.preventDefault();
-              const upRow = wrapRow(row - 1);
-              show(upRow, Math.min(col, grid[upRow].length - 1));
-              if (upRow === diffRowCount - 1) {
-                if (window.tempModal) {
-                  window.tempModal._destroyModal();
-                }
-                window.tempModal = new Modal('Wrapped to bottom');
-              }
-              break;
-            }
-            case 'ArrowDown': {
-              if (!isDiffRow(row)) break;
-              event.preventDefault();
-              const downRow = wrapRow(row + 1);
-              show(downRow, Math.min(col, grid[downRow].length - 1));
-              if (downRow == 0) {
-                if (window.tempModal) {
-                  window.tempModal._destroyModal();
-                }
-                window.tempModal = new Modal('Wrapped to top');
-              }
-              break;
-            }
-          }
-        });
-
-        lightbox.addEventListener('click', (event) => {
-          if (event.target === lightbox) lightbox.close();
-        });
-      })();
+      /* __REPORT_SCRIPT__ */
     </script>
   </body>
 </html>
