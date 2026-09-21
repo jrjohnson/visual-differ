@@ -81,6 +81,19 @@ summary {
     sans-serif;
 }
 
+.lightbox-counters {
+  display: flex;
+  gap: 1em;
+}
+
+.lightbox-image-counter,
+.lightbox-row-counter {
+  color: rgb(255 255 255 / 0.5);
+  font:
+    0.75rem/1 system-ui,
+    sans-serif;
+}
+
 .lightbox-image {
   max-height: calc(100dvh - 4rem);
   max-width: 100dvw;
@@ -95,19 +108,6 @@ summary {
     sans-serif;
   text-align: center;
   margin: 0;
-}
-
-.lightbox-counters {
-  display: flex;
-  gap: 1em;
-}
-
-.lightbox-image-counter,
-.lightbox-row-counter {
-  color: rgb(255 255 255 / 0.5);
-  font:
-    0.75rem/1 system-ui,
-    sans-serif;
 }
 
 .lightbox-link {
@@ -133,7 +133,7 @@ summary {
 .lightbox-btn {
   appearance: none;
   border: none;
-  background: rgb(255 255 255 / 0.1);
+  background: rgb(168 168 168 / 0.35);
   color: white;
   cursor: pointer;
   border-radius: 50%;
@@ -142,7 +142,7 @@ summary {
   transition: background-color 0.15s;
 
   &:hover {
-    background: rgb(255 255 255 / 0.25);
+    background: rgb(168 168 168 / 0.5);
   }
 
   &:focus-visible {
