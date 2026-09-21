@@ -32,9 +32,19 @@ const RED_16_BIT_PNG = Buffer.from(
 );
 
 /**
+ * Valid 1x1 red PNG encoded without an alpha channel (RGB, not RGBA). Used together with
+ * `red` to test channel-count mismatches: fast-png decodes these to different-length arrays
+ * despite matching width/height.
+ */
+const RED_NO_ALPHA_PNG = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4XmP4z8AAAAMBAQAwOwdeAAAAAElFTkSuQmCC',
+  'base64',
+);
+
+/**
  * Available PNG fixtures for testing
  */
-export type PngFixture = 'red' | 'blue' | 'largeRed' | 'red16Bit';
+export type PngFixture = 'red' | 'blue' | 'largeRed' | 'red16Bit' | 'redNoAlpha';
 
 /**
  * Gets the PNG buffer for a given fixture
@@ -49,6 +59,8 @@ function getPngBuffer(fixture: PngFixture): Buffer {
       return LARGE_RED_PNG;
     case 'red16Bit':
       return RED_16_BIT_PNG;
+    case 'redNoAlpha':
+      return RED_NO_ALPHA_PNG;
   }
 }
 

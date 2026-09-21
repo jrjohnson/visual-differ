@@ -33,8 +33,27 @@ describe('PngFilePair', () => {
     expect(pair.dimensionMismatch).toEqual({
       baselineWidth: 1,
       baselineHeight: 1,
+      baselineLength: 4,
       candidateWidth: 2,
       candidateHeight: 2,
+      candidateLength: 16,
+    });
+  });
+
+  it('should detect a channel-count mismatch as a dimension mismatch without throwing', () => {
+    // Same width/height, but 'red' is RGBA (4 channels) and 'redNoAlpha' is RGB (3 channels).
+    // fast-png decodes these to different-length arrays despite matching dimensions, which
+    // would otherwise crash pixelmatch with "Image sizes do not match".
+    const pair = testDir.createPngFilePair('test.png', 'red', 'redNoAlpha');
+
+    expect(pair.hasDimensionMismatch).toBe(true);
+    expect(pair.dimensionMismatch).toEqual({
+      baselineWidth: 1,
+      baselineHeight: 1,
+      baselineLength: 4,
+      candidateWidth: 1,
+      candidateHeight: 1,
+      candidateLength: 3,
     });
   });
 

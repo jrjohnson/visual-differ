@@ -82,49 +82,55 @@ test('cycle rows on up/down keyboard input', async ({ page }) => {
 
   const firstRowCounter = page.locator('.lightbox-row-counter').first();
 
-  await expect(firstRowCounter).toHaveText('Row 1 / 7');
+  await expect(firstRowCounter).toHaveText('Row 1 / 8');
 
   await page.keyboard.press('ArrowDown');
-  await expect(firstRowCounter).toHaveText('Row 2 / 7');
+  await expect(firstRowCounter).toHaveText('Row 2 / 8');
 
   await page.keyboard.press('ArrowDown');
-  await expect(firstRowCounter).toHaveText('Row 3 / 7');
+  await expect(firstRowCounter).toHaveText('Row 3 / 8');
 
   await page.keyboard.press('ArrowDown');
-  await expect(firstRowCounter).toHaveText('Row 4 / 7');
+  await expect(firstRowCounter).toHaveText('Row 4 / 8');
 
   await page.keyboard.press('ArrowDown');
-  await expect(firstRowCounter).toHaveText('Row 5 / 7');
+  await expect(firstRowCounter).toHaveText('Row 5 / 8');
 
   await page.keyboard.press('ArrowDown');
-  await expect(firstRowCounter).toHaveText('Row 6 / 7');
+  await expect(firstRowCounter).toHaveText('Row 6 / 8');
 
   await page.keyboard.press('ArrowDown');
-  await expect(firstRowCounter).toHaveText('Row 7 / 7');
+  await expect(firstRowCounter).toHaveText('Row 7 / 8');
 
   await page.keyboard.press('ArrowDown');
-  await expect(firstRowCounter).toHaveText('Row 1 / 7');
+  await expect(firstRowCounter).toHaveText('Row 8 / 8');
+
+  await page.keyboard.press('ArrowDown');
+  await expect(firstRowCounter).toHaveText('Row 1 / 8');
 
   await page.keyboard.press('ArrowUp');
-  await expect(firstRowCounter).toHaveText('Row 7 / 7');
+  await expect(firstRowCounter).toHaveText('Row 8 / 8');
 
   await page.keyboard.press('ArrowUp');
-  await expect(firstRowCounter).toHaveText('Row 6 / 7');
+  await expect(firstRowCounter).toHaveText('Row 7 / 8');
 
   await page.keyboard.press('ArrowUp');
-  await expect(firstRowCounter).toHaveText('Row 5 / 7');
+  await expect(firstRowCounter).toHaveText('Row 6 / 8');
 
   await page.keyboard.press('ArrowUp');
-  await expect(firstRowCounter).toHaveText('Row 4 / 7');
+  await expect(firstRowCounter).toHaveText('Row 5 / 8');
 
   await page.keyboard.press('ArrowUp');
-  await expect(firstRowCounter).toHaveText('Row 3 / 7');
+  await expect(firstRowCounter).toHaveText('Row 4 / 8');
 
   await page.keyboard.press('ArrowUp');
-  await expect(firstRowCounter).toHaveText('Row 2 / 7');
+  await expect(firstRowCounter).toHaveText('Row 3 / 8');
 
   await page.keyboard.press('ArrowUp');
-  await expect(firstRowCounter).toHaveText('Row 1 / 7');
+  await expect(firstRowCounter).toHaveText('Row 2 / 8');
+
+  await page.keyboard.press('ArrowUp');
+  await expect(firstRowCounter).toHaveText('Row 1 / 8');
 });
 
 test('show temporary modals when wrapping top <-> bottom', async ({ page }) => {
@@ -135,14 +141,14 @@ test('show temporary modals when wrapping top <-> bottom', async ({ page }) => {
 
   const firstRowCounter = page.locator('.lightbox-row-counter').first();
 
-  await expect(firstRowCounter).toHaveText('Row 1 / 7');
+  await expect(firstRowCounter).toHaveText('Row 1 / 8');
 
   await page.keyboard.press('ArrowUp');
-  await expect(firstRowCounter).toHaveText('Row 7 / 7');
+  await expect(firstRowCounter).toHaveText('Row 8 / 8');
   await expect(page.getByRole('dialog').filter({ hasText: /^Wrapped to bottom$/ })).toBeVisible();
 
   await page.keyboard.press('ArrowDown');
-  await expect(firstRowCounter).toHaveText('Row 1 / 7');
+  await expect(firstRowCounter).toHaveText('Row 1 / 8');
   await expect(page.getByRole('dialog').filter({ hasText: /^Wrapped to top$/ })).toBeVisible();
 });
 
@@ -152,10 +158,28 @@ test('shows dimension mismatch warning with only baseline/candidate images', asy
   const card = page.locator('div', { has: page.locator('h3', { hasText: 'resized-banner.png' }) });
 
   await expect(card.getByText('Dimension mismatch:')).toBeVisible();
-  await expect(card.getByText('Baseline 600x300, Candidate 600x380')).toBeVisible();
+  await expect(
+    card.getByText('Baseline 600x300, Data length: 720000, Candidate 600x380, Data length: 912000'),
+  ).toBeVisible();
   await expect(card.locator('.lightbox-trigger')).toHaveCount(2);
   await expect(card.getByAltText('Baseline screenshot for resized-banner.png')).toBeVisible();
   await expect(card.getByAltText('Candidate screenshot for resized-banner.png')).toBeVisible();
+});
+
+test('shows dimension mismatch warning for a channel-count mismatch', async ({ page }) => {
+  await page.goto(reportUrl);
+
+  const card = page.locator('div', {
+    has: page.locator('h3', { hasText: 'no-alpha-banner.png' }),
+  });
+
+  await expect(card.getByText('Dimension mismatch:')).toBeVisible();
+  await expect(
+    card.getByText('Baseline 400x200, Data length: 240000, Candidate 400x200, Data length: 320000'),
+  ).toBeVisible();
+  await expect(card.locator('.lightbox-trigger')).toHaveCount(2);
+  await expect(card.getByAltText('Baseline screenshot for no-alpha-banner.png')).toBeVisible();
+  await expect(card.getByAltText('Candidate screenshot for no-alpha-banner.png')).toBeVisible();
 });
 
 test('shows unsupported bit depth warning with only baseline/candidate images', async ({

@@ -11,8 +11,10 @@ import type { BitDepth, DecodedPng, PngDataArray } from 'fast-png';
 export interface DimensionMismatch {
   baselineWidth: number;
   baselineHeight: number;
+  baselineLength: number;
   candidateWidth: number;
   candidateHeight: number;
+  candidateLength: number;
 }
 
 /**
@@ -129,24 +131,39 @@ export class PngFilePair {
     this.candidateSourcePath = candidate.path;
 
     // Read PNGs
-    const { width: baselineWidth, height: baselineHeight, depth: baselineDepth } = this.baselinePng;
+    const {
+      width: baselineWidth,
+      height: baselineHeight,
+      depth: baselineDepth,
+      data: baselineData,
+    } = this.baselinePng;
     const {
       width: candidateWidth,
       height: candidateHeight,
       depth: candidateDepth,
+      data: candidateData,
     } = this.candidatePng;
+
+    const { length: baselineLength } = baselineData;
+    const { length: candidateLength } = candidateData;
 
     // Always use baseline dimensions
     this.width = baselineWidth;
     this.height = baselineHeight;
 
     // Check for dimension mismatch
-    if (baselineWidth !== candidateWidth || baselineHeight !== candidateHeight) {
+    if (
+      baselineWidth !== candidateWidth ||
+      baselineHeight !== candidateHeight ||
+      baselineLength !== candidateLength
+    ) {
       this.dimensionMismatch = {
         baselineWidth: baselineWidth,
         baselineHeight: baselineHeight,
+        baselineLength: baselineLength,
         candidateWidth: candidateWidth,
         candidateHeight: candidateHeight,
+        candidateLength: candidateLength,
       };
     }
 
