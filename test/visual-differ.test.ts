@@ -172,6 +172,38 @@ describe('visual-differ', () => {
       expect(result.withoutDifferences).toBe(1); // normal is identical
     });
 
+    it('should handle channel-count mismatches gracefully', () => {
+      // Same width/height, but 'red' is RGBA and 'redNoAlpha' is RGB - fast-png decodes
+      // these to different-length arrays, which must be caught before reaching pixelmatch.
+      testDir.writeBaseline('mismatch.png', 'red');
+      testDir.writeCandidate('mismatch.png', 'redNoAlpha');
+      testDir.writeBaseline('normal.png', 'red');
+      testDir.writeCandidate('normal.png', 'red');
+
+      const result: CompareResult = compareDirectories(
+        testDir.baselineDir,
+        testDir.candidateDir,
+        testDir.outputDir,
+      );
+
+      expect(result.exitCode).toBe(1);
+      expect(result.totalImages).toBe(2);
+      expect(result.withDifferences).toBe(1); // channel mismatch counted as different
+      expect(result.withoutDifferences).toBe(1); // normal is identical
+    });
+
+    it('should show channel mismatch info in report', () => {
+      testDir.writeBaseline('mismatch.png', 'red');
+      testDir.writeCandidate('mismatch.png', 'redNoAlpha');
+
+      compareDirectories(testDir.baselineDir, testDir.candidateDir, testDir.outputDir);
+
+      const html = readFileSync(join(testDir.outputDir, 'index.html'), 'utf-8');
+      expect(html).toContain('Dimension mismatch');
+      expect(html).toContain('Data length: 4');
+      expect(html).toContain('Data length: 3');
+    });
+
     it('should throw error for invalid PNG files', () => {
       writeFileSync(join(testDir.baselineDir, 'corrupt.png'), Buffer.from('not a png'));
       testDir.writeCandidate('corrupt.png', 'red');

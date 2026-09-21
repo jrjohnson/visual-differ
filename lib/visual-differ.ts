@@ -72,8 +72,8 @@ export function compareDirectories(
         hasDifference: true,
         diffPercentage: 100,
         dimensionMismatch: {
-          baseline: `${pngPair.dimensionMismatch!.baselineWidth}x${pngPair.dimensionMismatch!.baselineHeight}`,
-          candidate: `${pngPair.dimensionMismatch!.candidateWidth}x${pngPair.dimensionMismatch!.candidateHeight}`,
+          baseline: `${pngPair.dimensionMismatch!.baselineWidth}x${pngPair.dimensionMismatch!.baselineHeight}, Data length: ${pngPair.dimensionMismatch!.baselineLength}`,
+          candidate: `${pngPair.dimensionMismatch!.candidateWidth}x${pngPair.dimensionMismatch!.candidateHeight}, Data length: ${pngPair.dimensionMismatch!.candidateLength}`,
         },
       };
     }
