@@ -40,6 +40,14 @@ export default [
     },
   },
   {
+    files: ['templates/**/*.js'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+      },
+    },
+  },
+  {
     files: ['test/**/*.ts', 'screenshot-tests/**/*.ts', '*.config.ts', '*.config.js'],
     languageOptions: {
       parser: tsParser,
