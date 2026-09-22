@@ -67,11 +67,11 @@ summary {
   }
 }
 
-.lightbox-panel {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
+#lightbox-ui {
+  display: grid;
+  grid-template-areas:
+    'blank filename close'
+    'prev panel next';
 }
 
 .lightbox-image-filename {
@@ -79,11 +79,23 @@ summary {
   font:
     bold 1rem/1.4 system-ui,
     sans-serif;
+  grid-area: filename;
+  left: 0;
+  position: fixed;
+  text-align: center;
+  top: 1rem;
+  width: 100%;
 }
 
 .lightbox-counters {
   display: flex;
   gap: 1em;
+  justify-content: center;
+  left: 0;
+  position: fixed;
+  text-align: center;
+  top: 2.5rem;
+  width: 100%;
 }
 
 .lightbox-image-counter,
@@ -94,9 +106,17 @@ summary {
     sans-serif;
 }
 
+.lightbox-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  grid-area: panel;
+}
+
 .lightbox-image {
-  max-height: calc(100dvh - 4rem);
-  max-width: calc(100dvw - 2rem);
+  max-height: calc(100dvh - 12rem);
+  max-width: calc(100dvw - 6rem);
   object-fit: contain;
   border-radius: 4px;
 }
@@ -152,11 +172,13 @@ summary {
 }
 
 .lightbox-close {
+  grid-area: close;
   position: fixed;
   top: 1rem;
   right: 1rem;
   width: 2.5rem;
   height: 2.5rem;
+  z-index: 1;
 }
 
 .lightbox-nav {
@@ -172,9 +194,11 @@ summary {
 }
 
 .lightbox-prev {
+  grid-area: prev;
   left: 1rem;
 }
 .lightbox-next {
+  grid-area: next;
   right: 1rem;
 }
 
