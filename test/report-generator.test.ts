@@ -247,6 +247,20 @@ describe('report-generator', () => {
       expect(triggerCount).toBe(2);
     });
 
+    it('should render two triggers for comparison error groups', () => {
+      const pair = testDir.createPngFilePair('a.png', 'red', 'blue');
+      const html = generateAndRead([
+        createComparison(pair, {
+          hasDifference: true,
+          diffPercentage: 100,
+          comparisonError: 'pixelmatch failed',
+        }),
+      ]);
+
+      const triggerCount = (html.match(/class="lightbox-trigger"/g) ?? []).length;
+      expect(triggerCount).toBe(2);
+    });
+
     it('should produce independent trigger groups for multiple diff rows', () => {
       const pairA = testDir.createPngFilePair('a.png', 'red', 'blue');
       const pairB = testDir.createPngFilePair('b.png', 'red', 'blue');

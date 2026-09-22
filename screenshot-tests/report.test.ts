@@ -82,61 +82,67 @@ test('cycle rows on up/down keyboard input', async ({ page }) => {
 
   const firstRowCounter = page.locator('.lightbox-row-counter').first();
 
-  await expect(firstRowCounter).toHaveText('Row 1 / 9');
+  await expect(firstRowCounter).toHaveText('Row 1 / 10');
 
   await page.keyboard.press('ArrowDown');
-  await expect(firstRowCounter).toHaveText('Row 2 / 9');
+  await expect(firstRowCounter).toHaveText('Row 2 / 10');
 
   await page.keyboard.press('ArrowDown');
-  await expect(firstRowCounter).toHaveText('Row 3 / 9');
+  await expect(firstRowCounter).toHaveText('Row 3 / 10');
 
   await page.keyboard.press('ArrowDown');
-  await expect(firstRowCounter).toHaveText('Row 4 / 9');
+  await expect(firstRowCounter).toHaveText('Row 4 / 10');
 
   await page.keyboard.press('ArrowDown');
-  await expect(firstRowCounter).toHaveText('Row 5 / 9');
+  await expect(firstRowCounter).toHaveText('Row 5 / 10');
 
   await page.keyboard.press('ArrowDown');
-  await expect(firstRowCounter).toHaveText('Row 6 / 9');
+  await expect(firstRowCounter).toHaveText('Row 6 / 10');
 
   await page.keyboard.press('ArrowDown');
-  await expect(firstRowCounter).toHaveText('Row 7 / 9');
+  await expect(firstRowCounter).toHaveText('Row 7 / 10');
 
   await page.keyboard.press('ArrowDown');
-  await expect(firstRowCounter).toHaveText('Row 8 / 9');
+  await expect(firstRowCounter).toHaveText('Row 8 / 10');
 
   await page.keyboard.press('ArrowDown');
-  await expect(firstRowCounter).toHaveText('Row 9 / 9');
+  await expect(firstRowCounter).toHaveText('Row 9 / 10');
 
   await page.keyboard.press('ArrowDown');
-  await expect(firstRowCounter).toHaveText('Row 1 / 9');
+  await expect(firstRowCounter).toHaveText('Row 10 / 10');
+
+  await page.keyboard.press('ArrowDown');
+  await expect(firstRowCounter).toHaveText('Row 1 / 10');
 
   await page.keyboard.press('ArrowUp');
-  await expect(firstRowCounter).toHaveText('Row 9 / 9');
+  await expect(firstRowCounter).toHaveText('Row 10 / 10');
 
   await page.keyboard.press('ArrowUp');
-  await expect(firstRowCounter).toHaveText('Row 8 / 9');
+  await expect(firstRowCounter).toHaveText('Row 9 / 10');
 
   await page.keyboard.press('ArrowUp');
-  await expect(firstRowCounter).toHaveText('Row 7 / 9');
+  await expect(firstRowCounter).toHaveText('Row 8 / 10');
 
   await page.keyboard.press('ArrowUp');
-  await expect(firstRowCounter).toHaveText('Row 6 / 9');
+  await expect(firstRowCounter).toHaveText('Row 7 / 10');
 
   await page.keyboard.press('ArrowUp');
-  await expect(firstRowCounter).toHaveText('Row 5 / 9');
+  await expect(firstRowCounter).toHaveText('Row 6 / 10');
 
   await page.keyboard.press('ArrowUp');
-  await expect(firstRowCounter).toHaveText('Row 4 / 9');
+  await expect(firstRowCounter).toHaveText('Row 5 / 10');
 
   await page.keyboard.press('ArrowUp');
-  await expect(firstRowCounter).toHaveText('Row 3 / 9');
+  await expect(firstRowCounter).toHaveText('Row 4 / 10');
 
   await page.keyboard.press('ArrowUp');
-  await expect(firstRowCounter).toHaveText('Row 2 / 9');
+  await expect(firstRowCounter).toHaveText('Row 3 / 10');
 
   await page.keyboard.press('ArrowUp');
-  await expect(firstRowCounter).toHaveText('Row 1 / 9');
+  await expect(firstRowCounter).toHaveText('Row 2 / 10');
+
+  await page.keyboard.press('ArrowUp');
+  await expect(firstRowCounter).toHaveText('Row 1 / 10');
 });
 
 test('show temporary modals when wrapping top <-> bottom', async ({ page }) => {
@@ -147,14 +153,14 @@ test('show temporary modals when wrapping top <-> bottom', async ({ page }) => {
 
   const firstRowCounter = page.locator('.lightbox-row-counter').first();
 
-  await expect(firstRowCounter).toHaveText('Row 1 / 9');
+  await expect(firstRowCounter).toHaveText('Row 1 / 10');
 
   await page.keyboard.press('ArrowUp');
-  await expect(firstRowCounter).toHaveText('Row 9 / 9');
+  await expect(firstRowCounter).toHaveText('Row 10 / 10');
   await expect(page.getByRole('dialog').filter({ hasText: /^Wrapped to bottom$/ })).toBeVisible();
 
   await page.keyboard.press('ArrowDown');
-  await expect(firstRowCounter).toHaveText('Row 1 / 9');
+  await expect(firstRowCounter).toHaveText('Row 1 / 10');
   await expect(page.getByRole('dialog').filter({ hasText: /^Wrapped to top$/ })).toBeVisible();
 });
 
@@ -204,6 +210,19 @@ test('shows unsupported bit depth warning with only baseline/candidate images', 
   await expect(
     card.getByAltText('Candidate screenshot for gradient-mixed-depth.png'),
   ).toBeVisible();
+});
+
+test('shows comparison error warning with only baseline/candidate images', async ({ page }) => {
+  await page.goto(reportUrl);
+
+  const card = page.locator('div', {
+    has: page.locator('h3', { hasText: 'opaque-landscape.png' }),
+  });
+
+  await expect(card.getByText('Comparison error:')).toBeVisible();
+  await expect(card.locator('.lightbox-trigger')).toHaveCount(2);
+  await expect(card.getByAltText('Baseline screenshot for opaque-landscape.png')).toBeVisible();
+  await expect(card.getByAltText('Candidate screenshot for opaque-landscape.png')).toBeVisible();
 });
 
 test('shows added candidate image as reviewable lightbox image', async ({ page }) => {

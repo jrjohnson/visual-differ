@@ -163,6 +163,7 @@ export interface ComparisonOutcome {
     baseline: string;
     candidate: string;
   };
+  comparisonError?: string;
 }
 
 // Builds a ComparisonResult from a loaded PngFilePair plus the outcome fields under test

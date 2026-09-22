@@ -260,6 +260,35 @@ describe('visual-differ', () => {
       expect(html).toContain('8-bit');
     });
 
+    it('should handle pixelmatch comparison errors gracefully', () => {
+      // redNoAlpha passes the dimension and bit-depth guards but makes
+      // pixelmatch throw (3-byte RGB data vs expected 4-channel). The run must
+      // continue, surface the error in the report, and copy the source images.
+      testDir.writeBaseline('errored.png', 'redNoAlpha');
+      testDir.writeCandidate('errored.png', 'redNoAlpha');
+      testDir.writeBaseline('normal.png', 'red');
+      testDir.writeCandidate('normal.png', 'red');
+
+      const result: CompareResult = compareDirectories(
+        testDir.baselineDir,
+        testDir.candidateDir,
+        testDir.outputDir,
+      );
+
+      expect(result.exitCode).toBe(1);
+      expect(result.totalImages).toBe(2);
+      expect(result.withDifferences).toBe(1); // errored counted as different
+      expect(result.withoutDifferences).toBe(1); // normal is identical
+
+      const html = readFileSync(join(testDir.outputDir, 'index.html'), 'utf-8');
+      expect(html).toContain('Comparison error');
+
+      // Baseline/candidate are copied for inspection, but no diff image is generated
+      expect(existsSync(join(testDir.imagesDir, 'errored-baseline.png'))).toBe(true);
+      expect(existsSync(join(testDir.imagesDir, 'errored-candidate.png'))).toBe(true);
+      expect(existsSync(join(testDir.imagesDir, 'errored-diff.png'))).toBe(false);
+    });
+
     it('should accept custom threshold parameter', () => {
       testDir.writeBaseline('image1.png', 'red');
       testDir.writeCandidate('image1.png', 'blue');

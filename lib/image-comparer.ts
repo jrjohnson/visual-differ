@@ -29,6 +29,8 @@ export interface ComparisonResult {
     baseline: string;
     candidate: string;
   };
+  /** Optional error message if pixelmatch threw while comparing the images */
+  comparisonError?: string;
 }
 
 /**
@@ -41,14 +43,32 @@ export function compareImages(filePair: PngFilePair, threshold?: number): Compar
   const { width, height } = filePair;
   const diff = new Uint8Array(width * height * 4);
 
-  const numDiffPixels = pixelmatch(
-    filePair.baselineEightBitData,
-    filePair.candidateEightBitData,
-    diff,
-    width,
-    height,
-    threshold !== undefined ? { threshold } : {},
-  );
+  let numDiffPixels: number;
+  try {
+    numDiffPixels = pixelmatch(
+      filePair.baselineEightBitData,
+      filePair.candidateEightBitData,
+      diff,
+      width,
+      height,
+      threshold !== undefined ? { threshold } : {},
+    );
+  } catch (error) {
+    // pixelmatch (or the data getters) threw — copy the source images for
+    // manual review and surface the error in the report instead of dying.
+    copyFileSync(filePair.baselineSourcePath, filePair.baselinePath);
+    copyFileSync(filePair.candidateSourcePath, filePair.candidatePath);
+
+    return {
+      name: filePair.name,
+      baselinePath: filePair.baselinePath,
+      candidatePath: filePair.candidatePath,
+      diffPath: filePair.diffPath,
+      hasDifference: true,
+      diffPercentage: 100,
+      comparisonError: error instanceof Error ? error.message : String(error),
+    };
+  }
 
   const hasDifference = numDiffPixels > 0;
   const totalPixels = width * height;
