@@ -72,12 +72,38 @@ describe('image-comparer', () => {
       expect(existsSync(result.diffPath)).toBe(false);
     });
 
-    it('should throw a clear error when given an unsupported 16-bit PNG', () => {
+    it('should return a comparisonError result when given an unsupported 16-bit PNG', () => {
       // Callers should check PngFilePair.hasUnsupportedBitDepth before calling
       // compareImages; this documents what happens if that guard is skipped.
       const pair = testDir.createPngFilePair('test.png', 'red16Bit', 'red');
 
-      expect(() => compareImages(pair)).toThrow(/16-bit/);
+      const result = compareImages(pair);
+
+      expect(result.hasDifference).toBe(true);
+      expect(result.diffPercentage).toBe(100);
+      expect(typeof result.comparisonError).toBe('string');
+      expect(result.comparisonError!.length).toBeGreaterThan(0);
+      // No diff image can be generated, but baseline/candidate are copied for review
+      expect(existsSync(result.diffPath)).toBe(false);
+      expect(existsSync(result.baselinePath)).toBe(true);
+      expect(existsSync(result.candidatePath)).toBe(true);
+    });
+
+    it('should return a comparisonError result when pixelmatch throws on unsupported channel count', () => {
+      // redNoAlpha is a 1x1 RGB PNG (3-byte data). It passes the dimension and
+      // bit-depth guards (same w/h/length, both 8-bit) but pixelmatch expects
+      // 4-channel data, so it throws when the output buffer size disagrees.
+      const pair = testDir.createPngFilePair('test.png', 'redNoAlpha', 'redNoAlpha');
+
+      const result = compareImages(pair);
+
+      expect(result.hasDifference).toBe(true);
+      expect(result.diffPercentage).toBe(100);
+      expect(typeof result.comparisonError).toBe('string');
+      expect(result.comparisonError!.length).toBeGreaterThan(0);
+      expect(existsSync(result.diffPath)).toBe(false);
+      expect(existsSync(result.baselinePath)).toBe(true);
+      expect(existsSync(result.candidatePath)).toBe(true);
     });
   });
 });

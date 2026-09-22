@@ -71,6 +71,11 @@ function generateHTML(
       name: result.name,
       dimensionMismatch: result.dimensionMismatch,
       unsupportedBitDepth: result.unsupportedBitDepth,
+      comparisonError: result.comparisonError,
+      showDiffImage:
+        !result.dimensionMismatch &&
+        !result.unsupportedBitDepth &&
+        result.comparisonError === undefined,
       diffPercentage: result.diffPercentage.toFixed(2),
       baselineImage: `${IMAGES_DIR}/${basename(result.baselinePath)}`,
       diffImage: `${IMAGES_DIR}/${basename(result.diffPath)}`,

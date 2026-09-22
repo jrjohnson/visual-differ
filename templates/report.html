@@ -39,6 +39,11 @@
           <strong><span aria-label="Warning">⚠️</span> Unsupported bit depth:</strong>
           Baseline {{unsupportedBitDepth.baseline}}, Candidate {{unsupportedBitDepth.candidate}}
         </p>
+        {{else if comparisonError}}
+        <p>
+          <strong><span aria-label="Warning">⚠️</span> Comparison error:</strong>
+          {{comparisonError}}
+        </p>
         {{else}}
         <p><strong>Difference:</strong> {{diffPercentage}}%</p>
         {{/if}}
@@ -48,14 +53,14 @@
             <img src="{{baselineImage}}" alt="Baseline screenshot for {{name}}" />
           </button>
 
-          {{#unless dimensionMismatch}} {{#unless unsupportedBitDepth}}
+          {{#if showDiffImage}}
           <button type="button" class="lightbox-trigger">
             <img
               src="{{diffImage}}"
               alt="Visual difference highlighting changed pixels in {{name}}"
             />
           </button>
-          {{/unless}} {{/unless}}
+          {{/if}}
 
           <button type="button" class="lightbox-trigger">
             <img src="{{candidateImage}}" alt="Candidate screenshot for {{name}}" />

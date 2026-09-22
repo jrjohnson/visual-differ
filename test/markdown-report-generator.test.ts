@@ -119,6 +119,20 @@ describe('markdown-report-generator', () => {
       expect(md).toContain('8-bit');
     });
 
+    it('should show comparison error notes in table', () => {
+      const pair = testDir.createPngFilePair('errored.png', 'red', 'blue');
+      const md = generateAndRead([
+        createComparison(pair, {
+          hasDifference: true,
+          diffPercentage: 100,
+          comparisonError: 'pixelmatch failed',
+        }),
+      ]);
+
+      expect(md).toContain('Comparison error');
+      expect(md).toContain('pixelmatch failed');
+    });
+
     it('should list removed files', () => {
       const baselineOnly: ScannedFile[] = [{ name: 'removed.png', path: '/baseline/removed.png' }];
       const md = generateAndRead([], baselineOnly);
