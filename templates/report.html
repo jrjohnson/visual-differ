@@ -104,40 +104,47 @@
     </main>
 
     <dialog id="lightbox" aria-label="Image viewer">
-      <button type="button" class="lightbox-btn lightbox-close" aria-label="Close">
-        <svg class="lightbox-icon" viewBox="0 0 24 24">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </button>
-
-      <button
-        type="button"
-        class="lightbox-btn lightbox-nav lightbox-prev"
-        aria-label="Previous image"
-      >
-        <svg class="lightbox-icon" viewBox="0 0 24 24">
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-      </button>
-
-      <button type="button" class="lightbox-btn lightbox-nav lightbox-next" aria-label="Next image">
-        <svg class="lightbox-icon" viewBox="0 0 24 24">
-          <polyline points="9 6 15 12 9 18" />
-        </svg>
-      </button>
-
-      <div class="lightbox-panel">
+      <div id="lightbox-ui">
         <span class="lightbox-image-filename"></span>
-        <div class="lightbox-counters">
-          <span class="lightbox-image-counter"></span>
-          <span class="lightbox-row-counter"></span>
+
+        <button type="button" class="lightbox-btn lightbox-close" aria-label="Close">
+          <svg class="lightbox-icon" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+
+        <button
+          type="button"
+          class="lightbox-btn lightbox-nav lightbox-prev"
+          aria-label="Previous image"
+        >
+          <svg class="lightbox-icon" viewBox="0 0 24 24">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+
+        <button
+          type="button"
+          class="lightbox-btn lightbox-nav lightbox-next"
+          aria-label="Next image"
+        >
+          <svg class="lightbox-icon" viewBox="0 0 24 24">
+            <polyline points="9 6 15 12 9 18" />
+          </svg>
+        </button>
+
+        <div class="lightbox-panel">
+          <div class="lightbox-counters">
+            <span class="lightbox-image-counter"></span>
+            <span class="lightbox-row-counter"></span>
+          </div>
+
+          <img class="lightbox-image" src="" alt="" />
+
+          <p class="lightbox-caption"></p>
+          <a class="lightbox-link" href="" target="_blank" rel="noopener">Open image</a>
         </div>
-
-        <img class="lightbox-image" src="" alt="" />
-
-        <p class="lightbox-caption"></p>
-        <a class="lightbox-link" href="" target="_blank" rel="noopener">Open image</a>
       </div>
     </dialog>
 
