@@ -218,14 +218,14 @@ summary {
   border-radius: 8px;
   color: #fff;
   display: flex;
-  justify-self: center;
-  margin: 0 auto;
+  left: 1rem;
+  margin: 0;
   max-height: 95%;
   max-width: 500px;
   opacity: 0;
   padding: 0;
   position: fixed;
-  top: 20px;
+  top: 1rem;
   width: fit-content;
 
   &.load {
@@ -246,7 +246,7 @@ summary {
     line-height: 1.1;
     margin: 0;
     overflow-y: auto;
-    padding: 10px 5px;
+    padding: 5px;
     width: 100%;
   }
 }
