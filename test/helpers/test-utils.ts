@@ -7,6 +7,12 @@ import type { ComparisonResult } from '../../lib/image-comparer.js';
  * PNG test fixtures - minimal valid PNG images
  */
 
+/** Valid 1x1 greyscale + alpha channel PNG (2-channels) */
+const GREYSCALE_PNG = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAAXNSR0IB2cksfwAAAARnQU1BAACxjwv8YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAtJREFUCNdjaHAAAAFDAMHHrDupAAAAAElFTkSuQmCC',
+  'base64',
+);
+
 /** Valid 1x1 red PNG */
 const RED_PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==',
@@ -44,13 +50,15 @@ const RED_NO_ALPHA_PNG = Buffer.from(
 /**
  * Available PNG fixtures for testing
  */
-export type PngFixture = 'red' | 'blue' | 'largeRed' | 'red16Bit' | 'redNoAlpha';
+export type PngFixture = 'greyscale' | 'red' | 'blue' | 'largeRed' | 'red16Bit' | 'redNoAlpha';
 
 /**
  * Gets the PNG buffer for a given fixture
  */
 function getPngBuffer(fixture: PngFixture): Buffer {
   switch (fixture) {
+    case 'greyscale':
+      return GREYSCALE_PNG;
     case 'red':
       return RED_PNG;
     case 'blue':
@@ -160,6 +168,10 @@ export interface ComparisonOutcome {
     candidate: string;
   };
   unsupportedBitDepth?: {
+    baseline: string;
+    candidate: string;
+  };
+  unsupportedNumberOfChannels?: {
     baseline: string;
     candidate: string;
   };

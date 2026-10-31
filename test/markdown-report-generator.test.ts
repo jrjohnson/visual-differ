@@ -119,6 +119,21 @@ describe('markdown-report-generator', () => {
       expect(md).toContain('8-bit');
     });
 
+    it('should show unsupported number of channels notes in table', () => {
+      const pair = testDir.createPngFilePair('unsupported.png', 'greyscale', 'red');
+      const md = generateAndRead([
+        createComparison(pair, {
+          hasDifference: true,
+          diffPercentage: 100,
+          unsupportedNumberOfChannels: { baseline: '2-channels', candidate: '4-channels' },
+        }),
+      ]);
+
+      expect(md).toContain('Unsupported number of channels');
+      expect(md).toContain('2-channels');
+      expect(md).toContain('4-channels');
+    });
+
     it('should show comparison error notes in table', () => {
       const pair = testDir.createPngFilePair('errored.png', 'red', 'blue');
       const md = generateAndRead([

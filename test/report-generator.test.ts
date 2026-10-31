@@ -114,6 +114,33 @@ describe('report-generator', () => {
       expect(html).toContain('images/unsupported-candidate.png');
     });
 
+    it('should handle number of channels mismatch display', () => {
+      const pair = testDir.createPngFilePair('mismatched.png', 'red', 'greyscale');
+      const comparisonResults: ComparisonResult[] = [
+        createComparison(pair, {
+          hasDifference: true,
+          diffPercentage: 100,
+          unsupportedNumberOfChannels: {
+            baseline: '4-channels',
+            candidate: '2-channels',
+          },
+        }),
+      ];
+      const baselineOnly: ScannedFile[] = [];
+      const candidateOnly: ScannedFile[] = [];
+
+      generateReport(comparisonResults, baselineOnly, candidateOnly, testDir.outputDir);
+
+      const html = readFileSync(join(testDir.outputDir, 'index.html'), 'utf-8');
+
+      expect(html).toContain('Unsupported number of channels:');
+      expect(html).toContain('4-channels');
+      expect(html).toContain('2-channels');
+      expect(html).toContain('images/mismatched-baseline.png');
+      expect(html).not.toContain('images/mismatched-diff.png');
+      expect(html).toContain('images/mismatched-candidate.png');
+    });
+
     it('should show status indicator', () => {
       const pair = testDir.createPngFilePair('changed.png', 'red', 'blue');
       const comparisonResults: ComparisonResult[] = [
