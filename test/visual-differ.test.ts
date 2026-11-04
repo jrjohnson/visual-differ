@@ -173,10 +173,11 @@ describe('visual-differ', () => {
     });
 
     it('should handle channel-count mismatches gracefully', () => {
-      // Same width/height, but 'red' is RGBA and 'redNoAlpha' is RGB - fast-png decodes
-      // these to different-length arrays, which must be caught before reaching pixelmatch.
+      // Same width/height, but 'red' is RGBA and 'greyscale' is 2-channel greyscale + alpha,
+      // Fast-png decodes these as objects with different channel lengths,
+      // which must be caught before reaching pixelmatch.
       testDir.writeBaseline('mismatch.png', 'red');
-      testDir.writeCandidate('mismatch.png', 'redNoAlpha');
+      testDir.writeCandidate('mismatch.png', 'greyscale');
       testDir.writeBaseline('normal.png', 'red');
       testDir.writeCandidate('normal.png', 'red');
 
@@ -193,15 +194,14 @@ describe('visual-differ', () => {
     });
 
     it('should show channel mismatch info in report', () => {
-      testDir.writeBaseline('mismatch.png', 'red');
-      testDir.writeCandidate('mismatch.png', 'redNoAlpha');
+      testDir.writeBaseline('mismatch.png', 'greyscale');
+      testDir.writeCandidate('mismatch.png', 'greyscale');
 
       compareDirectories(testDir.baselineDir, testDir.candidateDir, testDir.outputDir);
 
       const html = readFileSync(join(testDir.outputDir, 'index.html'), 'utf-8');
-      expect(html).toContain('Dimension mismatch');
-      expect(html).toContain('Data length: 4');
-      expect(html).toContain('Data length: 3');
+      expect(html).toContain('Unsupported number of channels');
+      expect(html).toContain('Baseline 2-channels, Candidate 2-channels');
     });
 
     it('should throw error for invalid PNG files', () => {
@@ -260,14 +260,14 @@ describe('visual-differ', () => {
       expect(html).toContain('8-bit');
     });
 
-    it('should handle pixelmatch comparison errors gracefully', () => {
-      // redNoAlpha passes the dimension and bit-depth guards but makes
-      // pixelmatch throw (3-byte RGB data vs expected 4-channel). The run must
-      // continue, surface the error in the report, and copy the source images.
-      testDir.writeBaseline('errored.png', 'redNoAlpha');
-      testDir.writeCandidate('errored.png', 'redNoAlpha');
-      testDir.writeBaseline('normal.png', 'red');
-      testDir.writeCandidate('normal.png', 'red');
+    it('should process RGB/3-channel images successfully', () => {
+      // redNoAlpha is a 3-channel RGB image, which pixelmatch cannot process.
+      // however, we have a channel adjustment step in the workflow that backfills the missing
+      // alpha-channel as needed before doing a comparison.
+      // here, we check that this adjustment works as intended, and that the differ was able
+      // to successfully compare these RGB images.
+      testDir.writeBaseline('rgb.png', 'redNoAlpha');
+      testDir.writeCandidate('rgb.png', 'redNoAlpha');
 
       const result: CompareResult = compareDirectories(
         testDir.baselineDir,
@@ -275,18 +275,10 @@ describe('visual-differ', () => {
         testDir.outputDir,
       );
 
-      expect(result.exitCode).toBe(1);
-      expect(result.totalImages).toBe(2);
-      expect(result.withDifferences).toBe(1); // errored counted as different
-      expect(result.withoutDifferences).toBe(1); // normal is identical
-
-      const html = readFileSync(join(testDir.outputDir, 'index.html'), 'utf-8');
-      expect(html).toContain('Comparison error');
-
-      // Baseline/candidate are copied for inspection, but no diff image is generated
-      expect(existsSync(join(testDir.imagesDir, 'errored-baseline.png'))).toBe(true);
-      expect(existsSync(join(testDir.imagesDir, 'errored-candidate.png'))).toBe(true);
-      expect(existsSync(join(testDir.imagesDir, 'errored-diff.png'))).toBe(false);
+      expect(result.exitCode).toBe(0);
+      expect(result.totalImages).toBe(1);
+      expect(result.withDifferences).toBe(0);
+      expect(result.withoutDifferences).toBe(1);
     });
 
     it('should accept custom threshold parameter', () => {

@@ -90,10 +90,10 @@ describe('image-comparer', () => {
     });
 
     it('should return a comparisonError result when pixelmatch throws on unsupported channel count', () => {
-      // redNoAlpha is a 1x1 RGB PNG (3-byte data). It passes the dimension and
+      // greyscale is a 1x1 greyscale + alpha PNG (2-byte data). It passes the dimension and
       // bit-depth guards (same w/h/length, both 8-bit) but pixelmatch expects
       // 4-channel data, so it throws when the output buffer size disagrees.
-      const pair = testDir.createPngFilePair('test.png', 'redNoAlpha', 'redNoAlpha');
+      const pair = testDir.createPngFilePair('test.png', 'greyscale', 'redNoAlpha');
 
       const result = compareImages(pair);
 

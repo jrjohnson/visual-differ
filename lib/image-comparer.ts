@@ -29,6 +29,11 @@ export interface ComparisonResult {
     baseline: string;
     candidate: string;
   };
+  /** Optional note if the baseline or candidate PNG has a number of channels pixelmatch can't compare */
+  unsupportedNumberOfChannels?: {
+    baseline: string;
+    candidate: string;
+  };
   /** Optional error message if pixelmatch threw while comparing the images */
   comparisonError?: string;
 }

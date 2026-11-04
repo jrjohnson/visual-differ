@@ -67,9 +67,11 @@ function generateMarkdown(
           ? `⚠️ Dimension mismatch (${result.dimensionMismatch.baseline} → ${result.dimensionMismatch.candidate})`
           : result.unsupportedBitDepth
             ? `⚠️ Unsupported bit depth (${result.unsupportedBitDepth.baseline} → ${result.unsupportedBitDepth.candidate})`
-            : result.comparisonError !== undefined
-              ? `⚠️ Comparison error (${result.comparisonError})`
-              : '';
+            : result.unsupportedNumberOfChannels
+              ? `⚠️ Unsupported number of channels (${result.unsupportedNumberOfChannels.baseline} → ${result.unsupportedNumberOfChannels.candidate})`
+              : result.comparisonError !== undefined
+                ? `⚠️ Comparison error (${result.comparisonError})`
+                : '';
         lines.push(`| ${result.name} | ${result.diffPercentage.toFixed(2)}% | ${notes} |`);
       }
       if (withDifferences.length > MAX_FILES_SHOWN) {

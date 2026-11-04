@@ -28,6 +28,15 @@ export interface UnsupportedBitDepth {
 }
 
 /**
+ * Information about a baseline/candidate pair where either one or both PNGs
+ * do not use 4 channels (RBGA). Pixelmatch expects all input data to have exactly four channels.
+ */
+export interface UnsupportedNumberOfChannels {
+  baselineNumberOfChannels: number;
+  candidateNumberOfChannels: number;
+}
+
+/**
  * Represents a matched pair of PNG files loaded and ready for comparison
  */
 export class PngFilePair {
@@ -39,13 +48,14 @@ export class PngFilePair {
   public readonly height: number;
   public readonly dimensionMismatch?: DimensionMismatch;
   public readonly unsupportedBitDepth?: UnsupportedBitDepth;
+  public readonly unsupportedNumberOfChannels?: UnsupportedNumberOfChannels;
 
   get baselinePng(): DecodedPng {
-    return decode(readFileSync(this.baselineSourcePath));
+    return this.#decode(readFileSync(this.baselineSourcePath));
   }
 
   get candidatePng(): DecodedPng {
-    return decode(readFileSync(this.candidateSourcePath));
+    return this.#decode(readFileSync(this.candidateSourcePath));
   }
 
   /**
@@ -60,6 +70,13 @@ export class PngFilePair {
    */
   get hasUnsupportedBitDepth(): boolean {
     return this.unsupportedBitDepth !== undefined;
+  }
+
+  /**
+   * Returns true if the baseline or candidate PNG has a number of channels pixelmatch cannot compare
+   */
+  get hasUnsupportedNumberOfChannels(): boolean {
+    return this.unsupportedNumberOfChannels !== undefined;
   }
 
   /**
@@ -94,6 +111,36 @@ export class PngFilePair {
    */
   private get nameWithoutExtension(): string {
     return this.name.replace(/\.png$/i, '');
+  }
+
+  /**
+   * Decodes the given image.
+   * RGB images are automatically converted to RGBA images in the process.
+   */
+  #decode(png: Buffer): DecodedPng {
+    const image = decode(png);
+
+    // Return any non 3-channels/RBG PNGs as-is.
+    if (image.channels !== 3) {
+      return image;
+    }
+
+    // Convert the RGB image into a 4-channels/RGBA variant.
+    const rgba = new Uint8Array((image.data.length / 3) * 4);
+    for (let src = 0, dst = 0; src < image.data.length; src += 3, dst += 4) {
+      rgba[dst] = image.data[src]!;
+      rgba[dst + 1] = image.data[src + 1]!;
+      rgba[dst + 2] = image.data[src + 2]!;
+      rgba[dst + 3] = 255;
+    }
+    return {
+      text: image.text,
+      width: image.width,
+      height: image.height,
+      data: rgba,
+      channels: 4,
+      depth: image.depth,
+    };
   }
 
   /**
@@ -136,12 +183,14 @@ export class PngFilePair {
       height: baselineHeight,
       depth: baselineDepth,
       data: baselineData,
+      channels: baselineNumberOfChannels,
     } = this.baselinePng;
     const {
       width: candidateWidth,
       height: candidateHeight,
       depth: candidateDepth,
       data: candidateData,
+      channels: candidateNumberOfChannels,
     } = this.candidatePng;
 
     const { length: baselineLength } = baselineData;
@@ -170,6 +219,11 @@ export class PngFilePair {
     // Check for an unsupported bit depth
     if (baselineDepth === 16 || candidateDepth === 16) {
       this.unsupportedBitDepth = { baselineDepth, candidateDepth };
+    }
+
+    // Check for unsupported channels count.
+    if (4 !== baselineNumberOfChannels || 4 !== candidateNumberOfChannels) {
+      this.unsupportedNumberOfChannels = { baselineNumberOfChannels, candidateNumberOfChannels };
     }
   }
 }

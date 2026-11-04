@@ -98,6 +98,26 @@ export function compareDirectories(
       };
     }
 
+    // Handle unsupported number of channels - pixelmatch can only compare 4-channel/RBGA images,
+    // so copy source images and treat as 100% different
+    if (pngPair.hasUnsupportedNumberOfChannels) {
+      copyFileSync(pngPair.baselineSourcePath, pngPair.baselinePath);
+      copyFileSync(pngPair.candidateSourcePath, pngPair.candidatePath);
+
+      return {
+        name: pngPair.name,
+        baselinePath: pngPair.baselinePath,
+        candidatePath: pngPair.candidatePath,
+        diffPath: pngPair.diffPath,
+        hasDifference: true,
+        diffPercentage: 100,
+        unsupportedNumberOfChannels: {
+          baseline: `${pngPair.unsupportedNumberOfChannels!.baselineNumberOfChannels}-channels`,
+          candidate: `${pngPair.unsupportedNumberOfChannels!.candidateNumberOfChannels}-channels`,
+        },
+      };
+    }
+
     // No format issues - do normal comparison
     return compareImages(pngPair, threshold);
   });
