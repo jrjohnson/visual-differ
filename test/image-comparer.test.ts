@@ -1,8 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { existsSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { TestDirectory } from './helpers/test-utils.js';
 import { compareImages, type ComparisonResult } from '../lib/image-comparer.js';
+import { decode } from 'fast-png';
+import { PngFilePair } from '../lib/png-file-pair';
+import { getOutputFilePaths } from '../lib/utils';
 
 describe('image-comparer', () => {
   const testDir = new TestDirectory(join(process.cwd(), 'test-fixtures-comparer'));
@@ -73,16 +76,41 @@ describe('image-comparer', () => {
     });
 
     it('should return a comparisonError result when given an unsupported 16-bit PNG', () => {
-      // Callers should check PngFilePair.hasUnsupportedBitDepth before calling
-      // compareImages; this documents what happens if that guard is skipped.
-      const pair = testDir.createPngFilePair('test.png', 'red16Bit', 'red');
+      // This error is only raisable if the compared PngFilePair was instantiated directly.
+      const scannedFiles = testDir.createScannedFilePair('test.png', 'red16Bit', 'red');
+      const baselinePng = decode(readFileSync(scannedFiles.baseline.path));
+      const candidatePng = decode(readFileSync(scannedFiles.candidate.path));
+      const outputPaths = getOutputFilePaths(testDir.outputDir, 'test.png');
+      const pair = new PngFilePair(
+        'test.png',
+        {
+          text: baselinePng.text,
+          width: baselinePng.width,
+          height: baselinePng.height,
+          data: baselinePng.data,
+          channels: baselinePng.channels,
+          depth: baselinePng.depth,
+        },
+        scannedFiles.baseline.path,
+        outputPaths.baselinePath,
+        {
+          text: candidatePng.text,
+          width: candidatePng.width,
+          height: candidatePng.height,
+          data: candidatePng.data,
+          channels: candidatePng.channels,
+          depth: candidatePng.depth,
+        },
+        scannedFiles.candidate.path,
+        outputPaths.candidatePath,
+        outputPaths.diffPath,
+      );
 
       const result = compareImages(pair);
 
       expect(result.hasDifference).toBe(true);
       expect(result.diffPercentage).toBe(100);
-      expect(typeof result.comparisonError).toBe('string');
-      expect(result.comparisonError!.length).toBeGreaterThan(0);
+      expect(result.comparisonError).toBe('Baseline image is a 16-bit PNG');
       // No diff image can be generated, but baseline/candidate are copied for review
       expect(existsSync(result.diffPath)).toBe(false);
       expect(existsSync(result.baselinePath)).toBe(true);
@@ -93,14 +121,42 @@ describe('image-comparer', () => {
       // greyscale is a 1x1 greyscale + alpha PNG (2-byte data). It passes the dimension and
       // bit-depth guards (same w/h/length, both 8-bit) but pixelmatch expects
       // 4-channel data, so it throws when the output buffer size disagrees.
-      const pair = testDir.createPngFilePair('test.png', 'greyscale', 'redNoAlpha');
+      const scannedFiles = testDir.createScannedFilePair('test.png', 'greyscale', 'redNoAlpha');
+      const baselinePng = decode(readFileSync(scannedFiles.baseline.path));
+      const candidatePng = decode(readFileSync(scannedFiles.candidate.path));
+      const outputPaths = getOutputFilePaths(testDir.outputDir, 'test.png');
+      const pair = new PngFilePair(
+        'test.png',
+        {
+          text: baselinePng.text,
+          width: baselinePng.width,
+          height: baselinePng.height,
+          data: baselinePng.data,
+          channels: baselinePng.channels,
+          depth: baselinePng.depth,
+        },
+        scannedFiles.baseline.path,
+        outputPaths.baselinePath,
+        {
+          text: candidatePng.text,
+          width: candidatePng.width,
+          height: candidatePng.height,
+          data: candidatePng.data,
+          channels: candidatePng.channels,
+          depth: candidatePng.depth,
+        },
+        scannedFiles.candidate.path,
+        outputPaths.candidatePath,
+        outputPaths.diffPath,
+      );
 
       const result = compareImages(pair);
 
       expect(result.hasDifference).toBe(true);
       expect(result.diffPercentage).toBe(100);
-      expect(typeof result.comparisonError).toBe('string');
-      expect(result.comparisonError!.length).toBeGreaterThan(0);
+      expect(result.comparisonError).toBe(
+        'Image sizes do not match. Image 1 size: 2, image 2 size: 3',
+      );
       expect(existsSync(result.diffPath)).toBe(false);
       expect(existsSync(result.baselinePath)).toBe(true);
       expect(existsSync(result.candidatePath)).toBe(true);

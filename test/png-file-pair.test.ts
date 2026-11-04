@@ -1,7 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { join } from 'path';
 import { TestDirectory } from './helpers/test-utils.js';
-import { PngFilePair } from '../lib/png-file-pair.js';
+import { PngFilePair } from '../lib/png-file-pair';
+import { readFileSync } from 'fs';
+import { decode } from 'fast-png';
+import { getOutputFilePaths } from '../lib/utils';
 
 describe('PngFilePair', () => {
   const testDir = new TestDirectory(join(process.cwd(), 'test-fixtures-png-pair'));
@@ -14,61 +17,68 @@ describe('PngFilePair', () => {
     testDir.cleanup();
   });
 
-  it('should load matched PNG files successfully', () => {
-    const pair = testDir.createPngFilePair('image.png', 'red', 'red');
-
-    expect(pair.name).toBe('image.png');
-    expect(pair.width).toBe(1);
-    expect(pair.height).toBe(1);
-    expect(pair.baselinePng.data).toBeInstanceOf(Uint8Array);
-    expect(pair.candidatePng.data).toBeInstanceOf(Uint8Array);
-    expect(pair.hasDimensionMismatch).toBe(false);
-    expect(pair.hasUnsupportedBitDepth).toBe(false);
+  it('should throw error when reading 8-bit data from a 16-bit baseline image', () => {
+    const scannedFiles = testDir.createScannedFilePair('test.png', 'red16Bit', 'red');
+    const baselinePng = decode(readFileSync(scannedFiles.baseline.path));
+    const candidatePng = decode(readFileSync(scannedFiles.candidate.path));
+    const outputPaths = getOutputFilePaths(testDir.outputDir, 'test.png');
+    const pair = new PngFilePair(
+      'test.png',
+      {
+        text: baselinePng.text,
+        width: baselinePng.width,
+        height: baselinePng.height,
+        data: baselinePng.data,
+        channels: baselinePng.channels,
+        depth: baselinePng.depth,
+      },
+      scannedFiles.baseline.path,
+      outputPaths.baselinePath,
+      {
+        text: candidatePng.text,
+        width: candidatePng.width,
+        height: candidatePng.height,
+        data: candidatePng.data,
+        channels: candidatePng.channels,
+        depth: candidatePng.depth,
+      },
+      scannedFiles.candidate.path,
+      outputPaths.candidatePath,
+      outputPaths.diffPath,
+    );
+    expect(() => pair.baselineEightBitData).toThrow('Baseline image is a 16-bit PNG');
   });
 
-  it('should detect dimension mismatch without throwing', () => {
-    const pair = testDir.createPngFilePair('test.png', 'red', 'largeRed');
-
-    expect(pair.hasDimensionMismatch).toBe(true);
-    expect(pair.dimensionMismatch).toEqual({
-      baselineWidth: 1,
-      baselineHeight: 1,
-      baselineLength: 4,
-      candidateWidth: 2,
-      candidateHeight: 2,
-      candidateLength: 16,
-    });
-  });
-
-  it('should detect a channel-count mismatch as a dimension mismatch without throwing', () => {
-    // Same width/height, but 'red' is RGBA (4 channels) and 'greyscale' is greyscale + alpha (2 channels).
-    // fast-png decodes these to different-length arrays despite matching dimensions, which
-    // would otherwise crash pixelmatch with "Image sizes do not match".
-    const pair = testDir.createPngFilePair('test.png', 'red', 'greyscale');
-
-    expect(pair.hasDimensionMismatch).toBe(true);
-    expect(pair.dimensionMismatch).toEqual({
-      baselineWidth: 1,
-      baselineHeight: 1,
-      baselineLength: 4,
-      candidateWidth: 1,
-      candidateHeight: 1,
-      candidateLength: 2,
-    });
-  });
-
-  it('should detect unsupported bit depth without throwing', () => {
-    const pair = testDir.createPngFilePair('test.png', 'red16Bit', 'red');
-
-    expect(pair.hasUnsupportedBitDepth).toBe(true);
-    expect(pair.unsupportedBitDepth).toEqual({ baselineDepth: 16, candidateDepth: 8 });
-  });
-
-  it('should not flag unsupported bit depth for two 8-bit images', () => {
-    const pair = testDir.createPngFilePair('test.png', 'red', 'blue');
-
-    expect(pair.hasUnsupportedBitDepth).toBe(false);
-    expect(pair.unsupportedBitDepth).toBeUndefined();
+  it('should throw error when reading 8-bit data from a 16-bit candidate image', () => {
+    const scannedFiles = testDir.createScannedFilePair('test.png', 'red', 'red16Bit');
+    const baselinePng = decode(readFileSync(scannedFiles.baseline.path));
+    const candidatePng = decode(readFileSync(scannedFiles.candidate.path));
+    const outputPaths = getOutputFilePaths(testDir.outputDir, 'test.png');
+    const pair = new PngFilePair(
+      'test.png',
+      {
+        text: baselinePng.text,
+        width: baselinePng.width,
+        height: baselinePng.height,
+        data: baselinePng.data,
+        channels: baselinePng.channels,
+        depth: baselinePng.depth,
+      },
+      scannedFiles.baseline.path,
+      outputPaths.baselinePath,
+      {
+        text: candidatePng.text,
+        width: candidatePng.width,
+        height: candidatePng.height,
+        data: candidatePng.data,
+        channels: candidatePng.channels,
+        depth: candidatePng.depth,
+      },
+      scannedFiles.candidate.path,
+      outputPaths.candidatePath,
+      outputPaths.diffPath,
+    );
+    expect(() => pair.candidateEightBitData).toThrow('Candidate image is a 16-bit PNG');
   });
 
   it('should return 8-bit sample data when both images are 8-bit', () => {
@@ -76,49 +86,5 @@ describe('PngFilePair', () => {
 
     expect(pair.baselineEightBitData).toBeInstanceOf(Uint8Array);
     expect(pair.candidateEightBitData).toBeInstanceOf(Uint8Array);
-  });
-
-  it('should throw when reading 8-bit data from a 16-bit baseline', () => {
-    const pair = testDir.createPngFilePair('test.png', 'red16Bit', 'red');
-
-    expect(() => pair.baselineEightBitData).toThrow(/16-bit/);
-  });
-
-  it('should throw when reading 8-bit data from a 16-bit candidate', () => {
-    const pair = testDir.createPngFilePair('test.png', 'red', 'red16Bit');
-
-    expect(() => pair.candidateEightBitData).toThrow(/16-bit/);
-  });
-
-  it('should throw error if baseline file cannot be read', () => {
-    // Create a file so candidate exists
-    testDir.createPngFilePair('exists.png', 'red', 'red');
-    const missingPath = join(testDir.baselineDir, 'missing.png');
-
-    expect(
-      () =>
-        new PngFilePair(
-          'test.png',
-          { name: 'test.png', path: missingPath },
-          { name: 'exists.png', path: join(testDir.candidateDir, 'exists.png') },
-          testDir.outputDir,
-        ),
-    ).toThrow();
-  });
-
-  it('should throw error if candidate file cannot be read', () => {
-    // Create a file so baseline exists
-    testDir.createPngFilePair('exists.png', 'red', 'red');
-    const missingPath = join(testDir.candidateDir, 'missing.png');
-
-    expect(
-      () =>
-        new PngFilePair(
-          'test.png',
-          { name: 'exists.png', path: join(testDir.baselineDir, 'exists.png') },
-          { name: 'test.png', path: missingPath },
-          testDir.outputDir,
-        ),
-    ).toThrow();
   });
 });

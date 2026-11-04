@@ -1,8 +1,10 @@
 import { mkdirSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { PngFilePair } from '../../lib/png-file-pair.js';
 import type { ComparisonResult } from '../../lib/image-comparer.js';
-import type { ScannedFilePair } from '../../lib/file-scanner';
+import { PngFilePair } from '../../lib/png-file-pair.js';
+import { PngFilePairFactory } from '../../lib/png-file-pair-factory.js';
+import type { ScannedFilePair } from '../../lib/file-scanner.js';
+import { getOutputFilePaths } from '../../lib/utils.js';
 
 /**
  * PNG test fixtures - minimal valid PNG images
@@ -150,8 +152,12 @@ export class TestDirectory {
     candidateFixture: PngFixture,
   ): PngFilePair {
     const scannedFiles = this.createScannedFilePair(name, baselineFixture, candidateFixture);
-
-    return new PngFilePair(name, scannedFiles.baseline, scannedFiles.candidate, this.imagesDir);
+    return PngFilePairFactory.create(
+      name,
+      scannedFiles.baseline,
+      scannedFiles.candidate,
+      this.imagesDir,
+    );
   }
 
   /**
@@ -194,13 +200,18 @@ export interface ComparisonOutcome {
   comparisonError?: string;
 }
 
-// Builds a ComparisonResult from a loaded PngFilePair plus the outcome fields under test
-export function createComparison(pair: PngFilePair, outcome: ComparisonOutcome): ComparisonResult {
+// Creates a mock ComparisonResult object for output testing purpose.
+export function createComparison(
+  name: string,
+  outputDir: string,
+  outcome: ComparisonOutcome,
+): ComparisonResult {
+  const paths = getOutputFilePaths(outputDir, name);
   return {
-    name: pair.name,
-    baselinePath: pair.baselinePath,
-    candidatePath: pair.candidatePath,
-    diffPath: pair.diffPath,
+    name,
+    baselinePath: paths.baselinePath,
+    candidatePath: paths.candidatePath,
+    diffPath: paths.diffPath,
     ...outcome,
   };
 }

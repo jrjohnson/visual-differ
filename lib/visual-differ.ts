@@ -1,13 +1,19 @@
 import { mkdirSync, copyFileSync } from 'fs';
 import { join } from 'path';
 import { scanAndMatchFiles } from './file-scanner.js';
-import { PngFilePair } from './png-file-pair.js';
 import { compareImages } from './image-comparer.js';
 import { calculateExitCode } from './exit-code-calculator.js';
 import { generateReport } from './report-generator.js';
 import { generateMarkdownReport } from './markdown-report-generator.js';
 import { IMAGES_DIR, NEW_IMAGES_DIR } from './constants.js';
 import type { ComparisonResult } from './image-comparer.js';
+import { PngFilePairFactory } from './png-file-pair-factory.js';
+import {
+  DimensionMismatchError,
+  FilePairComparisonError,
+  UnsupportedBitDepthError,
+  UnsupportedNumberOfChannelsError,
+} from './errors.js';
 
 /**
  * Result of comparing two directories of screenshots
@@ -52,74 +58,63 @@ export function compareDirectories(
 
   // Load and compare matched PNG pairs
   const comparisonResults: ComparisonResult[] = fileMatches.matched.map((matched) => {
-    const pngPair = new PngFilePair(
-      matched.name,
-      { name: matched.name, path: matched.baselinePath },
-      { name: matched.name, path: matched.candidatePath },
-      imagesDir,
-    );
+    try {
+      const pngPair = PngFilePairFactory.create(
+        matched.name,
+        { name: matched.name, path: matched.baselinePath },
+        { name: matched.name, path: matched.candidatePath },
+        imagesDir,
+      );
+      return compareImages(pngPair, threshold);
+    } catch (e) {
+      if (e instanceof FilePairComparisonError) {
+        copyFileSync(e.baselineSourcePath, e.baselinePath);
+        copyFileSync(e.candidateSourcePath, e.candidatePath);
+      }
 
-    // Handle dimension mismatch - copy source images and treat as 100% different
-    if (pngPair.hasDimensionMismatch) {
-      copyFileSync(pngPair.baselineSourcePath, pngPair.baselinePath);
-      copyFileSync(pngPair.candidateSourcePath, pngPair.candidatePath);
-
-      return {
-        name: pngPair.name,
-        baselinePath: pngPair.baselinePath,
-        candidatePath: pngPair.candidatePath,
-        diffPath: pngPair.diffPath,
-        hasDifference: true,
-        diffPercentage: 100,
-        dimensionMismatch: {
-          baseline: `${pngPair.dimensionMismatch!.baselineWidth}x${pngPair.dimensionMismatch!.baselineHeight}, Data length: ${pngPair.dimensionMismatch!.baselineLength}`,
-          candidate: `${pngPair.dimensionMismatch!.candidateWidth}x${pngPair.dimensionMismatch!.candidateHeight}, Data length: ${pngPair.dimensionMismatch!.candidateLength}`,
-        },
-      };
+      if (e instanceof DimensionMismatchError) {
+        return {
+          name: matched.name,
+          baselinePath: e.baselinePath,
+          candidatePath: e.candidatePath,
+          diffPath: e.diffPath,
+          hasDifference: true,
+          diffPercentage: 100,
+          dimensionMismatch: {
+            baseline: `${e.dimensionMismatch.baselineWidth}x${e.dimensionMismatch.baselineHeight}, Data length: ${e.dimensionMismatch.baselineLength}`,
+            candidate: `${e.dimensionMismatch.candidateWidth}x${e.dimensionMismatch.candidateHeight}, Data length: ${e.dimensionMismatch.candidateLength}`,
+          },
+        };
+      } else if (e instanceof UnsupportedBitDepthError) {
+        return {
+          name: matched.name,
+          baselinePath: e.baselinePath,
+          candidatePath: e.candidatePath,
+          diffPath: e.diffPath,
+          hasDifference: true,
+          diffPercentage: 100,
+          unsupportedBitDepth: {
+            baseline: `${e.unsupportedBitDepth.baselineDepth}-bit`,
+            candidate: `${e.unsupportedBitDepth.candidateDepth}-bit`,
+          },
+        };
+      } else if (e instanceof UnsupportedNumberOfChannelsError) {
+        return {
+          name: matched.name,
+          baselinePath: e.baselinePath,
+          candidatePath: e.candidatePath,
+          diffPath: e.diffPath,
+          hasDifference: true,
+          diffPercentage: 100,
+          unsupportedNumberOfChannels: {
+            baseline: `${e.unsupportedNumberOfChannels.baselineNumberOfChannels}-channels`,
+            candidate: `${e.unsupportedNumberOfChannels.candidateNumberOfChannels}-channels`,
+          },
+        };
+      }
+      // Re-throw any unhandled errors.
+      throw e;
     }
-
-    // Handle unsupported bit depth - pixelmatch can't compare 16-bit PNGs,
-    // so copy source images and treat as 100% different
-    if (pngPair.hasUnsupportedBitDepth) {
-      copyFileSync(pngPair.baselineSourcePath, pngPair.baselinePath);
-      copyFileSync(pngPair.candidateSourcePath, pngPair.candidatePath);
-
-      return {
-        name: pngPair.name,
-        baselinePath: pngPair.baselinePath,
-        candidatePath: pngPair.candidatePath,
-        diffPath: pngPair.diffPath,
-        hasDifference: true,
-        diffPercentage: 100,
-        unsupportedBitDepth: {
-          baseline: `${pngPair.unsupportedBitDepth!.baselineDepth}-bit`,
-          candidate: `${pngPair.unsupportedBitDepth!.candidateDepth}-bit`,
-        },
-      };
-    }
-
-    // Handle unsupported number of channels - pixelmatch can only compare 4-channel/RBGA images,
-    // so copy source images and treat as 100% different
-    if (pngPair.hasUnsupportedNumberOfChannels) {
-      copyFileSync(pngPair.baselineSourcePath, pngPair.baselinePath);
-      copyFileSync(pngPair.candidateSourcePath, pngPair.candidatePath);
-
-      return {
-        name: pngPair.name,
-        baselinePath: pngPair.baselinePath,
-        candidatePath: pngPair.candidatePath,
-        diffPath: pngPair.diffPath,
-        hasDifference: true,
-        diffPercentage: 100,
-        unsupportedNumberOfChannels: {
-          baseline: `${pngPair.unsupportedNumberOfChannels!.baselineNumberOfChannels}-channels`,
-          candidate: `${pngPair.unsupportedNumberOfChannels!.candidateNumberOfChannels}-channels`,
-        },
-      };
-    }
-
-    // No format issues - do normal comparison
-    return compareImages(pngPair, threshold);
   });
 
   // Copy candidate-only (added) screenshots into images/new/ so the HTML report
