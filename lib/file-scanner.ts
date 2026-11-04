@@ -12,6 +12,16 @@ export interface ScannedFile {
 }
 
 /**
+ * Represents a pair of scanned files.
+ */
+export interface ScannedFilePair {
+  /** The baseline file. */
+  baseline: ScannedFile;
+  /** The candidate file. */
+  candidate: ScannedFile;
+}
+
+/**
  * Represents a matched pair of files found in both directories
  */
 export interface MatchedFilePair {

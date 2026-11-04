@@ -2,6 +2,7 @@ import { mkdirSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { PngFilePair } from '../../lib/png-file-pair.js';
 import type { ComparisonResult } from '../../lib/image-comparer.js';
+import type { ScannedFilePair } from '../../lib/file-scanner';
 
 /**
  * PNG test fixtures - minimal valid PNG images
@@ -109,6 +110,30 @@ export class TestDirectory {
   }
 
   /**
+   * Creates a pair of "scanned" fixture files in the baseline and candidate
+   * subdirectories of this test directory.
+   * @param name - The name of the PNG file (e.g., 'test.png')
+   * @param baselineFixture - Which PNG fixture to use for baseline
+   * @param candidateFixture - Which PNG fixture to use for candidate
+   * @return ScannedFilePair the generated pair of fixture files.
+   */
+  createScannedFilePair(
+    name: string,
+    baselineFixture: PngFixture,
+    candidateFixture: PngFixture,
+  ): ScannedFilePair {
+    const baselinePath = join(this.baselineDir, name);
+    const candidatePath = join(this.candidateDir, name);
+
+    writeFileSync(baselinePath, getPngBuffer(baselineFixture));
+    writeFileSync(candidatePath, getPngBuffer(candidateFixture));
+
+    return {
+      baseline: { name, path: baselinePath },
+      candidate: { name, path: candidatePath },
+    };
+  }
+  /**
    * Creates a real PngFilePair by writing actual PNG files to baseline and candidate dirs
    *
    * @param name - The name of the PNG file (e.g., 'test.png')
@@ -124,18 +149,9 @@ export class TestDirectory {
     baselineFixture: PngFixture,
     candidateFixture: PngFixture,
   ): PngFilePair {
-    const baselinePath = join(this.baselineDir, name);
-    const candidatePath = join(this.candidateDir, name);
+    const scannedFiles = this.createScannedFilePair(name, baselineFixture, candidateFixture);
 
-    writeFileSync(baselinePath, getPngBuffer(baselineFixture));
-    writeFileSync(candidatePath, getPngBuffer(candidateFixture));
-
-    return new PngFilePair(
-      name,
-      { name, path: baselinePath },
-      { name, path: candidatePath },
-      this.imagesDir,
-    );
+    return new PngFilePair(name, scannedFiles.baseline, scannedFiles.candidate, this.imagesDir);
   }
 
   /**
