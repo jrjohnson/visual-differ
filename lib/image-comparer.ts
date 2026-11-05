@@ -2,7 +2,7 @@ import pixelmatch from 'pixelmatch';
 import { encode } from 'fast-png';
 import { copyFileSync, writeFileSync } from 'fs';
 import type { PngFilePair } from './png-file-pair.js';
-import { ImageComparisonError } from './errors';
+import { ImageComparisonError } from './errors.js';
 
 /**
  * Result of comparing two images
