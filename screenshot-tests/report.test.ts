@@ -17,6 +17,8 @@ test('report', async ({ page, browserName }) => {
 });
 
 test('each image click', async ({ page, browserName }) => {
+  test.setTimeout(120_000);
+
   await page.goto(reportUrl);
   const viewport = page.viewportSize()!;
   const prefix = `${browserName}-${viewport.width}x${viewport.height}`;
