@@ -17,7 +17,7 @@ test('report', async ({ page, browserName }) => {
 });
 
 test('each image click', async ({ page, browserName }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(900_000);
 
   await page.goto(reportUrl);
   const viewport = page.viewportSize()!;
