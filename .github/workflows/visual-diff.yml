@@ -165,14 +165,10 @@ jobs:
           echo $exit_code > ./results/exit_code
           cp ${{ env.OUTPUT_DIR }}/report.md results/
           cat results/report.md results/visual-diff.txt
-      - uses: actions/upload-artifact@v7
-        id: upload-output
-        with:
-          name: ${{ env.OUTPUT_DIR }}
-          path: ${{ env.OUTPUT_DIR }}
       - run: |
-          echo ${{ steps.upload-output.outputs.artifact-url }} > ./results/artifact_url
           echo ${{ contains(github.event.pull_request.labels.*.name, 'approve visual diff') }} > ./results/approved
+          rm -rf ./results/report
+          cp -R "${{ env.OUTPUT_DIR }}" ./results/report
       - name: Save Comparison Cache
         if: steps.comparison-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v6
