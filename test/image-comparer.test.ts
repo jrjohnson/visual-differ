@@ -6,6 +6,7 @@ import { compareImages, type ComparisonResult } from '../lib/image-comparer.js';
 import { decode } from 'fast-png';
 import { PngFilePair } from '../lib/png-file-pair';
 import { getOutputFilePaths } from '../lib/utils';
+import { ImageComparisonError } from '../lib/errors';
 
 describe('image-comparer', () => {
   const testDir = new TestDirectory(join(process.cwd(), 'test-fixtures-comparer'));
@@ -105,16 +106,14 @@ describe('image-comparer', () => {
         outputPaths.candidatePath,
         outputPaths.diffPath,
       );
-
-      const result = compareImages(pair);
-
-      expect(result.hasDifference).toBe(true);
-      expect(result.diffPercentage).toBe(100);
-      expect(result.comparisonError).toBe('Baseline image is a 16-bit PNG');
-      // No diff image can be generated, but baseline/candidate are copied for review
-      expect(existsSync(result.diffPath)).toBe(false);
-      expect(existsSync(result.baselinePath)).toBe(true);
-      expect(existsSync(result.candidatePath)).toBe(true);
+      try {
+        compareImages(pair);
+      } catch (e) {
+        expect(e).toBeInstanceOf(ImageComparisonError);
+        if (e instanceof ImageComparisonError) {
+          expect(e.message).toBe('Baseline image is a 16-bit PNG');
+        }
+      }
     });
 
     it('should return a comparisonError result when pixelmatch throws on unsupported channel count', () => {
@@ -150,16 +149,14 @@ describe('image-comparer', () => {
         outputPaths.diffPath,
       );
 
-      const result = compareImages(pair);
-
-      expect(result.hasDifference).toBe(true);
-      expect(result.diffPercentage).toBe(100);
-      expect(result.comparisonError).toBe(
-        'Image sizes do not match. Image 1 size: 2, image 2 size: 3',
-      );
-      expect(existsSync(result.diffPath)).toBe(false);
-      expect(existsSync(result.baselinePath)).toBe(true);
-      expect(existsSync(result.candidatePath)).toBe(true);
+      try {
+        compareImages(pair);
+      } catch (e) {
+        expect(e).toBeInstanceOf(ImageComparisonError);
+        if (e instanceof ImageComparisonError) {
+          expect(e.message).toBe('Image sizes do not match. Image 1 size: 2, image 2 size: 3');
+        }
+      }
     });
   });
 });

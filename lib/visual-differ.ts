@@ -11,6 +11,7 @@ import { PngFilePairFactory } from './png-file-pair-factory.js';
 import {
   DimensionMismatchError,
   FilePairComparisonError,
+  ImageComparisonError,
   UnsupportedBitDepthError,
   UnsupportedNumberOfChannelsError,
 } from './errors.js';
@@ -110,6 +111,16 @@ export function compareDirectories(
             baseline: `${e.unsupportedNumberOfChannels.baselineNumberOfChannels}-channels`,
             candidate: `${e.unsupportedNumberOfChannels.candidateNumberOfChannels}-channels`,
           },
+        };
+      } else if (e instanceof ImageComparisonError) {
+        return {
+          name: matched.name,
+          baselinePath: e.baselinePath,
+          candidatePath: e.candidatePath,
+          diffPath: e.diffPath,
+          hasDifference: true,
+          diffPercentage: 100,
+          comparisonError: e.message,
         };
       }
       // Re-throw any unhandled errors.

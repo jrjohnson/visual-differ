@@ -129,3 +129,16 @@ export class UnsupportedNumberOfChannelsError extends FilePairComparisonError {
     this.unsupportedNumberOfChannels = unsupportedNumberOfChannels;
   }
 }
+/** Error for capturing any generic image comparison error */
+export class ImageComparisonError extends FilePairComparisonError {
+  constructor(
+    message: string,
+    baselineSourcePath: string,
+    baselinePath: string,
+    candidateSourcePath: string,
+    candidatePath: string,
+    diffPath: string,
+  ) {
+    super(message, baselineSourcePath, baselinePath, candidateSourcePath, candidatePath, diffPath);
+  }
+}
