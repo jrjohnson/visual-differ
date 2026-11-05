@@ -26,11 +26,11 @@ describe('PngFilePairFactory', () => {
     expect(pair.height).toBe(1);
     expect(pair.baselinePng.data).toBeInstanceOf(Uint8Array);
     expect(pair.candidatePng.data).toBeInstanceOf(Uint8Array);
-    expect(pair.baselineSourcePath).toEqual(`${testDir.baselineDir}/image.png`);
-    expect(pair.baselinePath).toEqual(`${testDir.imagesDir}/image-baseline.png`);
-    expect(pair.candidateSourcePath).toEqual(`${testDir.candidateDir}/image.png`);
-    expect(pair.candidatePath).toEqual(`${testDir.imagesDir}/image-candidate.png`);
-    expect(pair.diffPath).toEqual(`${testDir.imagesDir}/image-diff.png`);
+    expect(pair.baselineSourcePath).toEqual(join(testDir.baselineDir, 'image.png'));
+    expect(pair.baselinePath).toEqual(join(testDir.imagesDir, 'image-baseline.png'));
+    expect(pair.candidateSourcePath).toEqual(join(testDir.candidateDir, 'image.png'));
+    expect(pair.candidatePath).toEqual(join(testDir.imagesDir, 'image-candidate.png'));
+    expect(pair.diffPath).toEqual(join(testDir.imagesDir, 'image-diff.png'));
   });
 
   it('should throw on dimension mismatch', () => {
