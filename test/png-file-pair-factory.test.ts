@@ -99,7 +99,7 @@ describe('PngFilePairFactory', () => {
   it('should throw error if candidate file cannot be read', () => {
     // Create a file so candidate exists
     const scannedFiles = testDir.createScannedFilePair('exists.png', 'red', 'red');
-    scannedFiles.baseline.path = join(testDir.candidateDir, 'missing.png');
+    scannedFiles.candidate.path = join(testDir.candidateDir, 'missing.png');
 
     expect(() =>
       PngFilePairFactory.create(
