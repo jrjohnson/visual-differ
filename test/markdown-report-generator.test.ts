@@ -48,7 +48,7 @@ describe('markdown-report-generator', () => {
 
     it('should show FAILED status when differences exist', () => {
       const md = generateAndRead([
-        createComparison('same.png', testDir.outputDir, {
+        createComparison('changed.png', testDir.outputDir, {
           hasDifference: true,
           diffPercentage: 25.5,
         }),
