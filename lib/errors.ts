@@ -3,7 +3,7 @@ import { type BitDepth } from 'fast-png';
 /**
  * Information about a dimension mismatch between baseline and candidate images
  */
-interface DimensionMismatch {
+export interface DimensionMismatch {
   baselineWidth: number;
   baselineHeight: number;
   baselineLength: number;
@@ -17,7 +17,7 @@ interface DimensionMismatch {
  * depth pixelmatch cannot compare (pixelmatch only supports 8-bit-per-channel
  * data; 16-bit PNGs decode to a Uint16Array of raw sample values)
  */
-interface UnsupportedBitDepth {
+export interface UnsupportedBitDepth {
   baselineDepth: BitDepth;
   candidateDepth: BitDepth;
 }
@@ -26,7 +26,7 @@ interface UnsupportedBitDepth {
  * Information about a baseline/candidate pair where either one or both PNGs
  * do not use 4 channels (RBGA). Pixelmatch expects all input data to have exactly four channels.
  */
-interface UnsupportedNumberOfChannels {
+export interface UnsupportedNumberOfChannels {
   baselineNumberOfChannels: number;
   candidateNumberOfChannels: number;
 }
