@@ -114,7 +114,7 @@ export class PngFilePairFactory {
   static #decode(png: Buffer): DecodedPng {
     const image = decode(png);
 
-    // Return any non 3-channels/RBG PNGs as-is.
+    // Return any non 3-channels/RGB PNGs as-is.
     if (image.channels !== 3) {
       return image;
     }
