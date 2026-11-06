@@ -2,6 +2,7 @@ import pixelmatch from 'pixelmatch';
 import { encode } from 'fast-png';
 import { copyFileSync, writeFileSync } from 'fs';
 import type { PngFilePair } from './png-file-pair.js';
+import { ImageComparisonError } from './errors.js';
 
 /**
  * Result of comparing two images
@@ -59,20 +60,15 @@ export function compareImages(filePair: PngFilePair, threshold?: number): Compar
       threshold !== undefined ? { threshold } : {},
     );
   } catch (error) {
-    // pixelmatch (or the data getters) threw — copy the source images for
-    // manual review and surface the error in the report instead of dying.
-    copyFileSync(filePair.baselineSourcePath, filePair.baselinePath);
-    copyFileSync(filePair.candidateSourcePath, filePair.candidatePath);
-
-    return {
-      name: filePair.name,
-      baselinePath: filePair.baselinePath,
-      candidatePath: filePair.candidatePath,
-      diffPath: filePair.diffPath,
-      hasDifference: true,
-      diffPercentage: 100,
-      comparisonError: error instanceof Error ? error.message : String(error),
-    };
+    // pixelmatch (or the data getters) threw - rethrow with some additional context.
+    throw new ImageComparisonError(
+      error instanceof Error ? error.message : String(error),
+      filePair.baselineSourcePath,
+      filePair.baselinePath,
+      filePair.candidateSourcePath,
+      filePair.candidatePath,
+      filePair.diffPath,
+    );
   }
 
   const hasDifference = numDiffPixels > 0;

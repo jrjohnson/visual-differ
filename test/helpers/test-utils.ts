@@ -1,7 +1,10 @@
 import { mkdirSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { PngFilePair } from '../../lib/png-file-pair.js';
 import type { ComparisonResult } from '../../lib/image-comparer.js';
+import { PngFilePair } from '../../lib/png-file-pair.js';
+import { PngFilePairFactory } from '../../lib/png-file-pair-factory.js';
+import type { ScannedFilePair } from '../../lib/file-scanner.js';
+import { getOutputFilePaths } from '../../lib/utils.js';
 
 /**
  * PNG test fixtures - minimal valid PNG images
@@ -109,6 +112,30 @@ export class TestDirectory {
   }
 
   /**
+   * Creates a pair of "scanned" fixture files in the baseline and candidate
+   * subdirectories of this test directory.
+   * @param name - The name of the PNG file (e.g., 'test.png')
+   * @param baselineFixture - Which PNG fixture to use for baseline
+   * @param candidateFixture - Which PNG fixture to use for candidate
+   * @return ScannedFilePair the generated pair of fixture files.
+   */
+  createScannedFilePair(
+    name: string,
+    baselineFixture: PngFixture,
+    candidateFixture: PngFixture,
+  ): ScannedFilePair {
+    const baselinePath = join(this.baselineDir, name);
+    const candidatePath = join(this.candidateDir, name);
+
+    writeFileSync(baselinePath, getPngBuffer(baselineFixture));
+    writeFileSync(candidatePath, getPngBuffer(candidateFixture));
+
+    return {
+      baseline: { name, path: baselinePath },
+      candidate: { name, path: candidatePath },
+    };
+  }
+  /**
    * Creates a real PngFilePair by writing actual PNG files to baseline and candidate dirs
    *
    * @param name - The name of the PNG file (e.g., 'test.png')
@@ -124,16 +151,11 @@ export class TestDirectory {
     baselineFixture: PngFixture,
     candidateFixture: PngFixture,
   ): PngFilePair {
-    const baselinePath = join(this.baselineDir, name);
-    const candidatePath = join(this.candidateDir, name);
-
-    writeFileSync(baselinePath, getPngBuffer(baselineFixture));
-    writeFileSync(candidatePath, getPngBuffer(candidateFixture));
-
-    return new PngFilePair(
+    const scannedFiles = this.createScannedFilePair(name, baselineFixture, candidateFixture);
+    return PngFilePairFactory.create(
       name,
-      { name, path: baselinePath },
-      { name, path: candidatePath },
+      scannedFiles.baseline,
+      scannedFiles.candidate,
       this.imagesDir,
     );
   }
@@ -178,13 +200,18 @@ export interface ComparisonOutcome {
   comparisonError?: string;
 }
 
-// Builds a ComparisonResult from a loaded PngFilePair plus the outcome fields under test
-export function createComparison(pair: PngFilePair, outcome: ComparisonOutcome): ComparisonResult {
+// Creates a mock ComparisonResult object for output testing purpose.
+export function createComparison(
+  name: string,
+  outputDir: string,
+  outcome: ComparisonOutcome,
+): ComparisonResult {
+  const paths = getOutputFilePaths(outputDir, name);
   return {
-    name: pair.name,
-    baselinePath: pair.baselinePath,
-    candidatePath: pair.candidatePath,
-    diffPath: pair.diffPath,
+    name,
+    baselinePath: paths.baselinePath,
+    candidatePath: paths.candidatePath,
+    diffPath: paths.diffPath,
     ...outcome,
   };
 }
