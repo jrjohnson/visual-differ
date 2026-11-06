@@ -34,20 +34,22 @@ describe('PngFilePairFactory', () => {
   });
 
   it('should throw on dimension mismatch', () => {
+    let err: unknown;
     try {
       testDir.createPngFilePair('test.png', 'red', 'largeRed');
     } catch (e) {
-      expect(e).toBeInstanceOf(DimensionMismatchError);
-      if (e instanceof DimensionMismatchError) {
-        expect(e.dimensionMismatch).toEqual({
-          baselineWidth: 1,
-          baselineHeight: 1,
-          baselineLength: 4,
-          candidateWidth: 2,
-          candidateHeight: 2,
-          candidateLength: 16,
-        });
-      }
+      err = e;
+    }
+    expect(err).toBeInstanceOf(DimensionMismatchError);
+    if (err instanceof DimensionMismatchError) {
+      expect(err.dimensionMismatch).toEqual({
+        baselineWidth: 1,
+        baselineHeight: 1,
+        baselineLength: 4,
+        candidateWidth: 2,
+        candidateHeight: 2,
+        candidateLength: 16,
+      });
     }
   });
 
