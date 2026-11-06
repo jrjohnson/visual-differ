@@ -6,7 +6,6 @@ import { compareImages, type ComparisonResult } from '../lib/image-comparer.js';
 import { decode } from 'fast-png';
 import { PngFilePair } from '../lib/png-file-pair.js';
 import { getOutputFilePaths } from '../lib/utils.js';
-import { ImageComparisonError } from '../lib/errors.js';
 
 describe('image-comparer', () => {
   const testDir = new TestDirectory(join(process.cwd(), 'test-fixtures-comparer'));
@@ -106,14 +105,7 @@ describe('image-comparer', () => {
         outputPaths.candidatePath,
         outputPaths.diffPath,
       );
-      try {
-        compareImages(pair);
-      } catch (e) {
-        expect(e).toBeInstanceOf(ImageComparisonError);
-        if (e instanceof ImageComparisonError) {
-          expect(e.message).toBe('Baseline image is a 16-bit PNG');
-        }
-      }
+      expect(() => compareImages(pair)).toThrow('Baseline image is a 16-bit PNG');
     });
 
     it('should return a comparisonError result when pixelmatch throws on unsupported channel count', () => {
@@ -149,14 +141,9 @@ describe('image-comparer', () => {
         outputPaths.diffPath,
       );
 
-      try {
-        compareImages(pair);
-      } catch (e) {
-        expect(e).toBeInstanceOf(ImageComparisonError);
-        if (e instanceof ImageComparisonError) {
-          expect(e.message).toBe('Image sizes do not match. Image 1 size: 2, image 2 size: 3');
-        }
-      }
+      expect(() => compareImages(pair)).toThrow(
+        'Image sizes do not match. Image 1 size: 2, image 2 size: 3',
+      );
     });
   });
 });
