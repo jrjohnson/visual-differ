@@ -4,9 +4,9 @@ import { join } from 'path';
 import { TestDirectory } from './helpers/test-utils.js';
 import { compareImages, type ComparisonResult } from '../lib/image-comparer.js';
 import { decode } from 'fast-png';
-import { PngFilePair } from '../lib/png-file-pair';
-import { getOutputFilePaths } from '../lib/utils';
-import { ImageComparisonError } from '../lib/errors';
+import { PngFilePair } from '../lib/png-file-pair.js';
+import { getOutputFilePaths } from '../lib/utils.js';
+import { ImageComparisonError } from '../lib/errors.js';
 
 describe('image-comparer', () => {
   const testDir = new TestDirectory(join(process.cwd(), 'test-fixtures-comparer'));

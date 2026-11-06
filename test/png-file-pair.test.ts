@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { join } from 'path';
 import { TestDirectory } from './helpers/test-utils.js';
-import { PngFilePair } from '../lib/png-file-pair';
+import { PngFilePair } from '../lib/png-file-pair.js';
 import { readFileSync } from 'fs';
 import { decode } from 'fast-png';
-import { getOutputFilePaths } from '../lib/utils';
+import { getOutputFilePaths } from '../lib/utils.js';
 
 describe('PngFilePair', () => {
   const testDir = new TestDirectory(join(process.cwd(), 'test-fixtures-png-pair'));

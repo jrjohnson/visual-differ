@@ -6,7 +6,7 @@ import {
   UnsupportedBitDepthError,
   UnsupportedNumberOfChannelsError,
 } from '../lib/errors.js';
-import { PngFilePairFactory } from '../lib/png-file-pair-factory';
+import { PngFilePairFactory } from '../lib/png-file-pair-factory.js';
 
 describe('PngFilePairFactory', () => {
   const testDir = new TestDirectory(join(process.cwd(), 'test-fixtures-png-pair-factory'));
