@@ -2,6 +2,7 @@ import js from '@eslint/js';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 import prettierConfig from 'eslint-config-prettier';
+import nPlugin from 'eslint-plugin-n';
 import prettierPlugin from 'eslint-plugin-prettier';
 import globals from 'globals';
 
@@ -24,11 +25,15 @@ export default [
     },
     plugins: {
       '@typescript-eslint': tsPlugin,
+      n: nPlugin,
       prettier: prettierPlugin,
     },
     rules: {
       ...tsPlugin.configs.recommended.rules,
       ...tsPlugin.configs['recommended-type-checked'].rules,
+
+      'n/file-extension-in-import': ['error', 'always'],
+
       'prettier/prettier': 'error',
       '@typescript-eslint/explicit-function-return-type': 'error',
       '@typescript-eslint/no-unused-vars': [
@@ -57,10 +62,14 @@ export default [
     },
     plugins: {
       '@typescript-eslint': tsPlugin,
+      n: nPlugin,
       prettier: prettierPlugin,
     },
     rules: {
       ...tsPlugin.configs.recommended.rules,
+
+      'n/file-extension-in-import': ['error', 'always'],
+
       'prettier/prettier': 'error',
       '@typescript-eslint/no-unused-vars': [
         'error',

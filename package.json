@@ -57,6 +57,7 @@
     "@vitest/coverage-v8": "^4.0.13",
     "eslint": "^10.1.0",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-n": "^18.5.0",
     "eslint-plugin-prettier": "^5.5.4",
     "globals": "^17.4.0",
     "husky": "^9.1.7",
