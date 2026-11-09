@@ -3,6 +3,7 @@ import { join } from 'path';
 import { TestDirectory } from './helpers/test-utils.js';
 import {
   DimensionMismatchError,
+  PngDecodingError,
   UnsupportedBitDepthError,
   UnsupportedNumberOfChannelsError,
 } from '../lib/errors.js';
@@ -78,6 +79,52 @@ describe('PngFilePairFactory', () => {
           candidateDepth: 8,
         });
       }
+    }
+  });
+
+  it('should throw a PngDecodingError when the baseline file cannot be decoded', () => {
+    let err: unknown;
+    try {
+      testDir.createPngFilePair('test.png', 'corrupt', 'red');
+    } catch (e) {
+      err = e;
+    }
+    expect(err).toBeInstanceOf(PngDecodingError);
+    if (err instanceof PngDecodingError) {
+      expect(err.pngDecodingFailure).toEqual({
+        image: 'baseline',
+        message: 'wrong PNG signature',
+      });
+    }
+  });
+
+  it('should throw a PngDecodingError when the candidate file cannot be decoded', () => {
+    let err: unknown;
+    try {
+      testDir.createPngFilePair('test.png', 'red', 'corrupt');
+    } catch (e) {
+      err = e;
+    }
+    expect(err).toBeInstanceOf(PngDecodingError);
+    if (err instanceof PngDecodingError) {
+      expect(err.pngDecodingFailure).toEqual({
+        image: 'candidate',
+        message: 'wrong PNG signature',
+      });
+    }
+  });
+
+  it('should throw a PngDecodingError when a file is truncated', () => {
+    let err: unknown;
+    try {
+      testDir.createPngFilePair('test.png', 'truncated', 'red');
+    } catch (e) {
+      err = e;
+    }
+    expect(err).toBeInstanceOf(PngDecodingError);
+    if (err instanceof PngDecodingError) {
+      expect(err.pngDecodingFailure.image).toBe('baseline');
+      expect(err.pngDecodingFailure.message.length).toBeGreaterThan(0);
     }
   });
 

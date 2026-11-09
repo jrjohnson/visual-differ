@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { writeFileSync, existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { TestDirectory } from './helpers/test-utils.js';
 import { compareDirectories, type CompareResult } from '../lib/visual-differ.js';
@@ -204,13 +204,46 @@ describe('visual-differ', () => {
       expect(html).toContain('Baseline 2-channels, Candidate 2-channels');
     });
 
-    it('should throw error for invalid PNG files', () => {
-      writeFileSync(join(testDir.baselineDir, 'corrupt.png'), Buffer.from('not a png'));
+    it('should handle invalid PNG files gracefully', () => {
+      testDir.writeBaseline('corrupt.png', 'corrupt');
+      testDir.writeCandidate('corrupt.png', 'red');
+      testDir.writeBaseline('normal.png', 'red');
+      testDir.writeCandidate('normal.png', 'red');
+
+      const result: CompareResult = compareDirectories(
+        testDir.baselineDir,
+        testDir.candidateDir,
+        testDir.outputDir,
+      );
+
+      expect(result.exitCode).toBe(1);
+      expect(result.totalImages).toBe(2);
+      expect(result.withDifferences).toBe(1); // undecodable PNG counted as different
+      expect(result.withoutDifferences).toBe(1); // normal is identical
+
+      // Baseline/candidate are copied for inspection, but no diff image can be generated
+      expect(existsSync(join(testDir.imagesDir, 'corrupt-baseline.png'))).toBe(true);
+      expect(existsSync(join(testDir.imagesDir, 'corrupt-candidate.png'))).toBe(true);
+      expect(existsSync(join(testDir.imagesDir, 'corrupt-diff.png'))).toBe(false);
+    });
+
+    it('should show PNG decoding error info in reports', () => {
+      testDir.writeBaseline('corrupt.png', 'corrupt');
       testDir.writeCandidate('corrupt.png', 'red');
 
-      expect(() =>
-        compareDirectories(testDir.baselineDir, testDir.candidateDir, testDir.outputDir),
-      ).toThrow();
+      compareDirectories(testDir.baselineDir, testDir.candidateDir, testDir.outputDir);
+
+      const html = readFileSync(join(testDir.outputDir, 'index.html'), 'utf-8');
+      expect(html).toContain('PNG decoding error');
+      expect(html).toContain('baseline image (wrong PNG signature)');
+      // Both images are still linked for review, but no diff image exists
+      expect(html).toContain('images/corrupt-baseline.png');
+      expect(html).toContain('images/corrupt-candidate.png');
+      expect(html).not.toContain('images/corrupt-diff.png');
+
+      const markdown = readFileSync(join(testDir.outputDir, 'report.md'), 'utf-8');
+      expect(markdown).toContain('PNG decoding error');
+      expect(markdown).toContain('baseline image: wrong PNG signature');
     });
 
     it('should show dimension mismatch info in report', () => {

@@ -129,6 +129,43 @@ export class UnsupportedNumberOfChannelsError extends FilePairComparisonError {
     this.unsupportedNumberOfChannels = unsupportedNumberOfChannels;
   }
 }
+/**
+ * Information about a PNG file that could not be decoded, e.g. because it is
+ * corrupted or truncated ("wrong PNG signature" and friends)
+ */
+export interface PngDecodingFailure {
+  /** Which image of the pair failed to decode */
+  image: 'baseline' | 'candidate';
+  /** The underlying decoding error message */
+  message: string;
+}
+
+/** Error for capturing PNGs that could not be decoded while creating a file pair. */
+export class PngDecodingError extends FilePairComparisonError {
+  public readonly pngDecodingFailure: PngDecodingFailure;
+
+  constructor(
+    baselineSourcePath: string,
+    baselinePath: string,
+    candidateSourcePath: string,
+    candidatePath: string,
+    diffPath: string,
+    pngDecodingFailure: PngDecodingFailure,
+  ) {
+    const { image, message } = pngDecodingFailure;
+    const imageLabel = image === 'baseline' ? 'Baseline' : 'Candidate';
+    super(
+      `${imageLabel} image could not be decoded: ${message}`,
+      baselineSourcePath,
+      baselinePath,
+      candidateSourcePath,
+      candidatePath,
+      diffPath,
+    );
+    this.pngDecodingFailure = pngDecodingFailure;
+  }
+}
+
 /** Error for capturing any generic image comparison error */
 export class ImageComparisonError extends FilePairComparisonError {
   constructor(

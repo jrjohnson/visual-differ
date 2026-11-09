@@ -50,10 +50,17 @@ const RED_NO_ALPHA_PNG = Buffer.from(
   'base64',
 );
 
+/** Invalid file content: bytes without a PNG signature, like a corrupted screenshot */
+const CORRUPT_PNG = Buffer.from('this file is not a png, its signature is wrong', 'utf-8');
+
+/** Truncated PNG: a valid signature followed by an incomplete IHDR chunk */
+const TRUNCATED_PNG = RED_PNG.subarray(0, 16);
+
 /**
  * Available PNG fixtures for testing
  */
-export type PngFixture = 'greyscale' | 'red' | 'blue' | 'largeRed' | 'red16Bit' | 'redNoAlpha';
+export type PngFixture =
+  'greyscale' | 'red' | 'blue' | 'largeRed' | 'red16Bit' | 'redNoAlpha' | 'corrupt' | 'truncated';
 
 /**
  * Gets the PNG buffer for a given fixture
@@ -72,6 +79,10 @@ function getPngBuffer(fixture: PngFixture): Buffer {
       return RED_16_BIT_PNG;
     case 'redNoAlpha':
       return RED_NO_ALPHA_PNG;
+    case 'corrupt':
+      return CORRUPT_PNG;
+    case 'truncated':
+      return TRUNCATED_PNG;
   }
 }
 
@@ -196,6 +207,10 @@ export interface ComparisonOutcome {
   unsupportedNumberOfChannels?: {
     baseline: string;
     candidate: string;
+  };
+  pngDecodingError?: {
+    image: 'baseline' | 'candidate';
+    message: string;
   };
   comparisonError?: string;
 }

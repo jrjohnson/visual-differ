@@ -64,16 +64,9 @@ function generateMarkdown(
       lines.push('| File | Diff % | Notes |');
       lines.push('|------|--------|-------|');
       for (const result of shown) {
-        const notes = result.dimensionMismatch
-          ? `⚠️ Dimension mismatch (${result.dimensionMismatch.baseline} → ${result.dimensionMismatch.candidate})`
-          : result.unsupportedBitDepth
-            ? `⚠️ Unsupported bit depth (${result.unsupportedBitDepth.baseline} → ${result.unsupportedBitDepth.candidate})`
-            : result.unsupportedNumberOfChannels
-              ? `⚠️ Unsupported number of channels (${result.unsupportedNumberOfChannels.baseline} → ${result.unsupportedNumberOfChannels.candidate})`
-              : result.comparisonError !== undefined
-                ? `⚠️ Comparison error (${result.comparisonError})`
-                : '';
-        lines.push(`| ${result.name} | ${result.diffPercentage.toFixed(2)}% | ${notes} |`);
+        lines.push(
+          `| ${result.name} | ${result.diffPercentage.toFixed(2)}% | ${notesFor(result)} |`,
+        );
       }
       if (withDifferences.length > MAX_FILES_SHOWN) {
         lines.push(`| … and ${withDifferences.length - MAX_FILES_SHOWN} more | | |`);
@@ -118,4 +111,25 @@ function generateMarkdown(
   lines.push('');
 
   return lines.join('\n');
+}
+
+// Builds the warning note shown in the Differences table for a result, if any.
+function notesFor(result: ComparisonResult): string {
+  if (result.pngDecodingError) {
+    const { image, message } = result.pngDecodingError;
+    return `⚠️ PNG decoding error (${image} image: ${message})`;
+  }
+  if (result.dimensionMismatch) {
+    return `⚠️ Dimension mismatch (${result.dimensionMismatch.baseline} → ${result.dimensionMismatch.candidate})`;
+  }
+  if (result.unsupportedBitDepth) {
+    return `⚠️ Unsupported bit depth (${result.unsupportedBitDepth.baseline} → ${result.unsupportedBitDepth.candidate})`;
+  }
+  if (result.unsupportedNumberOfChannels) {
+    return `⚠️ Unsupported number of channels (${result.unsupportedNumberOfChannels.baseline} → ${result.unsupportedNumberOfChannels.candidate})`;
+  }
+  if (result.comparisonError !== undefined) {
+    return `⚠️ Comparison error (${result.comparisonError})`;
+  }
+  return '';
 }

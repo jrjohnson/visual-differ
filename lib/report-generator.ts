@@ -73,8 +73,10 @@ function generateHTML(
       dimensionMismatch: result.dimensionMismatch,
       unsupportedBitDepth: result.unsupportedBitDepth,
       unsupportedNumberOfChannels: result.unsupportedNumberOfChannels,
+      pngDecodingError: result.pngDecodingError,
       comparisonError: result.comparisonError,
       showDiffImage:
+        !result.pngDecodingError &&
         !result.dimensionMismatch &&
         !result.unsupportedBitDepth &&
         !result.unsupportedNumberOfChannels &&
