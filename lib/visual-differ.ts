@@ -12,6 +12,7 @@ import {
   DimensionMismatchError,
   FilePairComparisonError,
   ImageComparisonError,
+  PngDecodingError,
   UnsupportedBitDepthError,
   UnsupportedNumberOfChannelsError,
 } from './errors.js';
@@ -73,7 +74,20 @@ export function compareDirectories(
         copyFileSync(e.candidateSourcePath, e.candidatePath);
       }
 
-      if (e instanceof DimensionMismatchError) {
+      if (e instanceof PngDecodingError) {
+        return {
+          name: matched.name,
+          baselinePath: e.baselinePath,
+          candidatePath: e.candidatePath,
+          diffPath: e.diffPath,
+          hasDifference: true,
+          diffPercentage: 100,
+          pngDecodingError: {
+            image: e.pngDecodingFailure.image,
+            message: e.pngDecodingFailure.message,
+          },
+        };
+      } else if (e instanceof DimensionMismatchError) {
         return {
           name: matched.name,
           baselinePath: e.baselinePath,

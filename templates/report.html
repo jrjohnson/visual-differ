@@ -29,7 +29,12 @@
       <div>
         <h3>{{name}}</h3>
 
-        {{#if dimensionMismatch}}
+        {{#if pngDecodingError}}
+        <p>
+          <strong><span aria-label="Warning">⚠️</span> PNG decoding error:</strong>
+          {{pngDecodingError.image}} image ({{pngDecodingError.message}})
+        </p>
+        {{else if dimensionMismatch}}
         <p>
           <strong><span aria-label="Warning">⚠️</span> Dimension mismatch:</strong>
           Baseline {{dimensionMismatch.baseline}}, Candidate {{dimensionMismatch.candidate}}

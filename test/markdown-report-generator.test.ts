@@ -152,6 +152,20 @@ describe('markdown-report-generator', () => {
       expect(md).toContain('pixelmatch failed');
     });
 
+    it('should show PNG decoding error notes in table', () => {
+      const md = generateAndRead([
+        createComparison('corrupt.png', testDir.outputDir, {
+          hasDifference: true,
+          diffPercentage: 100,
+          pngDecodingError: { image: 'baseline', message: 'wrong PNG signature' },
+        }),
+      ]);
+
+      expect(md).toContain('PNG decoding error');
+      expect(md).toContain('baseline image');
+      expect(md).toContain('wrong PNG signature');
+    });
+
     it('should list removed files', () => {
       const baselineOnly: ScannedFile[] = [{ name: 'removed.png', path: '/baseline/removed.png' }];
       const md = generateAndRead([], baselineOnly);

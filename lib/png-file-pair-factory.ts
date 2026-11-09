@@ -5,6 +5,7 @@ import type { ScannedFile } from './file-scanner.js';
 import { getOutputFilePaths } from './utils.js';
 import {
   DimensionMismatchError,
+  PngDecodingError,
   UnsupportedBitDepthError,
   UnsupportedNumberOfChannelsError,
 } from './errors.js';
@@ -26,9 +27,29 @@ export class PngFilePairFactory {
 
     // Target output file paths
     const { baselinePath, candidatePath, diffPath } = getOutputFilePaths(outputDir, name);
-    // Decode the files
-    const baselinePng = PngFilePairFactory.#decode(readFileSync(baselineSourcePath));
-    const candidatePng = PngFilePairFactory.#decode(readFileSync(candidateSourcePath));
+    // Decode the files. Undecodable PNGs (corrupted, truncated, not actually PNGs, ...)
+    // are captured as a PngDecodingError so that the run can continue and the reports
+    // can call out the broken file pair. Reading happens outside the guard below, so
+    // file system errors (e.g. a file that vanished since scanning) still fail loudly.
+    const decodeImage = (png: Buffer, image: 'baseline' | 'candidate'): DecodedPng => {
+      try {
+        return PngFilePairFactory.#decode(png);
+      } catch (error) {
+        throw new PngDecodingError(
+          baselineSourcePath,
+          baselinePath,
+          candidateSourcePath,
+          candidatePath,
+          diffPath,
+          {
+            image,
+            message: error instanceof Error ? error.message : String(error),
+          },
+        );
+      }
+    };
+    const baselinePng = decodeImage(readFileSync(baselineSourcePath), 'baseline');
+    const candidatePng = decodeImage(readFileSync(candidateSourcePath), 'candidate');
 
     // Read attributes and data from files
     const {

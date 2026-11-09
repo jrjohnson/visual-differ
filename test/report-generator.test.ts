@@ -142,6 +142,28 @@ describe('report-generator', () => {
       expect(html).toContain('images/mismatched-candidate.png');
     });
 
+    it('should handle PNG decoding error display', () => {
+      const comparisonResults: ComparisonResult[] = [
+        createComparison('corrupt.png', testDir.outputDir, {
+          hasDifference: true,
+          diffPercentage: 100,
+          pngDecodingError: { image: 'baseline', message: 'wrong PNG signature' },
+        }),
+      ];
+      const baselineOnly: ScannedFile[] = [];
+      const candidateOnly: ScannedFile[] = [];
+
+      generateReport(comparisonResults, baselineOnly, candidateOnly, testDir.outputDir);
+
+      const html = readFileSync(join(testDir.outputDir, 'index.html'), 'utf-8');
+
+      expect(html).toContain('PNG decoding error');
+      expect(html).toContain('baseline image (wrong PNG signature)');
+      expect(html).toContain('images/corrupt-baseline.png');
+      expect(html).not.toContain('images/corrupt-diff.png');
+      expect(html).toContain('images/corrupt-candidate.png');
+    });
+
     it('should show status indicator', () => {
       const comparisonResults: ComparisonResult[] = [
         createComparison('changed.png', testDir.outputDir, {
@@ -289,6 +311,19 @@ describe('report-generator', () => {
           hasDifference: true,
           diffPercentage: 100,
           comparisonError: 'pixelmatch failed',
+        }),
+      ]);
+
+      const triggerCount = (html.match(/class="lightbox-trigger"/g) ?? []).length;
+      expect(triggerCount).toBe(2);
+    });
+
+    it('should render two triggers for PNG decoding error groups', () => {
+      const html = generateAndRead([
+        createComparison('a.png', testDir.outputDir, {
+          hasDifference: true,
+          diffPercentage: 100,
+          pngDecodingError: { image: 'candidate', message: 'wrong PNG signature' },
         }),
       ]);
 

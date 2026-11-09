@@ -35,6 +35,11 @@ export interface ComparisonResult {
     baseline: string;
     candidate: string;
   };
+  /** Optional note if the baseline or candidate PNG could not be decoded (e.g. corrupted or truncated file) */
+  pngDecodingError?: {
+    image: 'baseline' | 'candidate';
+    message: string;
+  };
   /** Optional error message if pixelmatch threw while comparing the images */
   comparisonError?: string;
 }
