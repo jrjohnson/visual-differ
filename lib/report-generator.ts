@@ -3,6 +3,7 @@ import { join, basename, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import Handlebars from 'handlebars';
 import { IMAGES_DIR, NEW_IMAGES_DIR, REPORT_FILENAME } from './constants.js';
+import { currentTimestamp } from './utils.js';
 import type { ComparisonResult } from './image-comparer.js';
 import type { ScannedFile } from './file-scanner.js';
 
@@ -98,6 +99,8 @@ function generateHTML(
     })),
 
     hasRemovedOrAdded: baselineOnly.length > 0 || candidateOnly.length > 0,
+
+    generatedAt: currentTimestamp(),
   };
 
   // Render Handlebars first, then inline the CSS and JavaScript.

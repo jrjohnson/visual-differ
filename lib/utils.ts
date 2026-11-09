@@ -27,3 +27,8 @@ export function getOutputFilePaths(outputDir: string, name: string): OutputFileP
     diffPath: join(outputDir, `${nameWithoutExtension}${DIFF_SUFFIX}`),
   };
 }
+
+// Returns the current time as an ISO 8601 UTC timestamp, e.g. "2026-11-07T00:15:35.123Z"
+export function currentTimestamp(): string {
+  return new Date().toISOString();
+}
